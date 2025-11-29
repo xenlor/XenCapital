@@ -19,6 +19,8 @@ import { ExpensesDonutChart } from '@/components/ExpensesDonutChart'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { getAvailableMonths } from './actions/general'
 import { getSavingsAnalysis } from './actions/ahorros'
+import { DownloadReportButton } from '@/components/DownloadReportButton'
+import { NewTransactionButton } from '@/components/NewTransactionButton'
 
 export default async function DashboardPage({
     searchParams,
@@ -77,13 +79,13 @@ export default async function DashboardPage({
                 </div>
                 <div className="flex flex-wrap gap-3">
                     <MonthSelector availableDates={availableMonths} />
-                    <button className="btn-secondary text-sm flex-1 md:flex-none justify-center">
-                        Descargar Reporte
-                    </button>
-                    <Link href="/ingresos" className="btn-primary text-sm flex items-center justify-center gap-2 flex-1 md:flex-none">
-                        <TrendingUp className="w-4 h-4" />
-                        Nueva Transacción
-                    </Link>
+                    <NewTransactionButton />
+                    <DownloadReportButton
+                        ingresos={ingresos}
+                        gastos={gastos}
+                        month={month}
+                        year={year}
+                    />
                 </div>
             </div>
 
@@ -241,6 +243,6 @@ export default async function DashboardPage({
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
