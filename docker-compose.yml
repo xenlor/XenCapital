@@ -1,4 +1,19 @@
 services:
+  app:
+    container_name: control-gastos-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://admin:adminpassword@postgres:5432/control_gastos
+      AUTH_SECRET: ${AUTH_SECRET} # Needs to be set in .env
+      NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: always
+
   postgres:
     image: postgres:15-alpine
     container_name: control-gastos-db
@@ -13,3 +28,5 @@ services:
 
 volumes:
   postgres_data:
+
+
