@@ -38,8 +38,10 @@ git clone https://github.com/tu-usuario/control-gastos.git
 
 2.  Pega el siguiente contenido (ajusta los valores):
     ```env
-    # Base de datos (Interna de Docker)
-    DATABASE_URL="postgres://admin:adminpassword@postgres:5432/control_gastos"
+    # Configuración de Base de Datos (¡Cámbialo!)
+    POSTGRES_USER="usuario_seguro"
+    POSTGRES_PASSWORD="contraseña_muy_dificil_de_adivinar_123"
+    POSTGRES_DB="control_gastos"
     
     # Seguridad (Genera uno largo)
     AUTH_SECRET="x_tu_secreto_super_seguro_x"

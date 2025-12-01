@@ -4,18 +4,24 @@ export const authConfig = {
     pages: {
         signIn: '/login',
     },
+    trustHost: true,
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
-            const isLoginPage = nextUrl.pathname === '/login';
+            const isOnLoginPage = nextUrl.pathname.startsWith('/login');
 
-            if (isLoginPage) {
-                if (isLoggedIn) return Response.redirect(new URL('/', nextUrl));
-                return true;
+            // If logged in and trying to access login page, redirect to home
+            if (isLoggedIn && isOnLoginPage) {
+                return Response.redirect(new URL('/', nextUrl));
             }
 
-            if (isLoggedIn) return true;
-            return false; // Redirect unauthenticated users to login page
+            // If not logged in and not on login page, deny access (will redirect to login)
+            if (!isLoggedIn && !isOnLoginPage) {
+                return false;
+            }
+
+            // Allow access in all other cases
+            return true;
         },
     },
     providers: [], // Add providers with an empty array for now

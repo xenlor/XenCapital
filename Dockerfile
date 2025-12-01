@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -9,6 +9,12 @@ WORKDIR /app
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 RUN npm ci
+
+# Install production dependencies only
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -21,6 +27,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN npx prisma generate
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -36,6 +43,9 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/prisma ./prisma
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Set the correct permission for prerender cache
 RUN mkdir .next

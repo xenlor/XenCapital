@@ -22,7 +22,11 @@ export async function authenticate(
     }
 
     try {
-        await signIn('credentials', formData, { redirectTo: '/' });
+        await signIn('credentials', {
+            email: formData.get('email'),
+            password: formData.get('password'),
+            redirect: false,
+        });
     } catch (error) {
         if (error instanceof AuthError) {
             switch (error.type) {
@@ -34,6 +38,9 @@ export async function authenticate(
         }
         throw error;
     }
+
+    // If we reach here, login was successful
+    redirect('/');
 }
 
 export async function register(prevState: any, formData: FormData) {

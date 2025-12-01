@@ -7,6 +7,8 @@ import { SubmitButton } from '@/components/ui/SubmitButton'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { getAvailableMonths } from '@/app/actions/general'
 
+import { Ahorro } from '@prisma/client'
+
 export default async function AhorrosPage({
     searchParams,
 }: {
@@ -195,7 +197,7 @@ export default async function AhorrosPage({
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {ahorros.map((ahorro) => (
+                                {ahorros.map((ahorro: Ahorro) => (
                                     <div
                                         key={ahorro.id}
                                         className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 gap-4"
