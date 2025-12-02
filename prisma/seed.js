@@ -6,12 +6,12 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('🌱 Seeding database...');
 
-    const adminEmail = 'admin@admin.com';
+    const adminUsername = 'admin';
     const adminPassword = '123456';
 
     // 1. Check or Create Admin User
     let admin = await prisma.user.findUnique({
-        where: { email: adminEmail }
+        where: { username: adminUsername }
     });
 
     if (!admin) {
@@ -20,7 +20,7 @@ async function main() {
 
         admin = await prisma.user.create({
             data: {
-                email: adminEmail,
+                username: adminUsername,
                 name: 'Admin',
                 password: hashedPassword,
                 role: 'ADMIN',

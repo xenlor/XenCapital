@@ -23,7 +23,7 @@ export async function getUsers() {
             select: {
                 id: true,
                 name: true,
-                email: true,
+                username: true,
                 role: true,
                 createdAt: true,
                 _count: {
@@ -66,10 +66,19 @@ export async function createUser(data: any) {
     try {
         const hashedPassword = await bcrypt.hash(data.password, 10)
 
+        // Check if username exists
+        const existingUser = await prisma.user.findUnique({
+            where: { username: data.username }
+        })
+
+        if (existingUser) {
+            return { success: false, error: 'Username already taken' }
+        }
+
         await prisma.user.create({
             data: {
                 name: data.name,
-                email: data.email,
+                username: data.username,
                 password: hashedPassword,
                 role: data.role || 'USER',
                 configuracion: {
@@ -84,5 +93,24 @@ export async function createUser(data: any) {
     } catch (error) {
         console.error('Error creating user:', error)
         return { success: false, error: 'Failed to create user' }
+    }
+}
+
+export async function resetPassword(userId: string, newPassword: string) {
+    await requireAdmin()
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword }
+        })
+
+        revalidatePath('/admin/users')
+        return { success: true }
+    } catch (error) {
+        console.error('Error resetting password:', error)
+        return { success: false, error: 'Failed to reset password' }
     }
 }

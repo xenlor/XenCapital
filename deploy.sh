@@ -70,7 +70,7 @@ echo -e "\n${BLUE}5. Configurando usuario administrador...${NC}"
 docker-compose exec -T app node prisma/seed.js
 
 echo -e "\n${BLUE}6. Asegurando rol de administrador...${NC}"
-docker-compose exec -T app node scripts/fix-admin.js admin@admin.com
+docker-compose exec -T app node scripts/fix-admin.js admin
 
 echo -e "\n${GREEN}✅ ¡Despliegue completado con éxito!${NC}"
 echo -e "Tu aplicación debería estar corriendo en http://localhost:3000 (o configurada en tu dominio si usas Nginx)."

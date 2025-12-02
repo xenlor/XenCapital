@@ -2,11 +2,11 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 async function main() {
-    const email = process.argv[2] || 'admin@admin.com'
-    console.log(`🔍 Checking role for: ${email}`)
+    const username = process.argv[2] || 'admin'
+    console.log(`🔍 Checking role for: ${username}`)
 
     const user = await prisma.user.findUnique({
-        where: { email }
+        where: { username }
     })
 
     if (!user) {
@@ -20,7 +20,7 @@ async function main() {
     if (user.role !== 'ADMIN') {
         console.log('⚠️ Role is NOT Admin. Updating...')
         await prisma.user.update({
-            where: { email },
+            where: { username },
             data: { role: 'ADMIN' }
         })
         console.log('✅ Role updated to ADMIN successfully!')

@@ -6,9 +6,9 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import type { User } from '@/lib/definitions'; // We might need to define this or use Prisma type
 
-async function getUser(email: string): Promise<any> {
+async function getUser(username: string): Promise<any> {
     try {
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({ where: { username } });
         return user;
     } catch (error) {
         console.error('Failed to fetch user:', error);
@@ -22,18 +22,18 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         Credentials({
             async authorize(credentials) {
                 const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .object({ username: z.string().min(3), password: z.string().min(6) })
                     .safeParse(credentials);
 
                 if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
-                    const user = await getUser(email);
+                    const { username, password } = parsedCredentials.data;
+                    const user = await getUser(username);
                     if (!user) return null;
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
                     if (passwordsMatch) {
-                        console.log('Authorize - User found:', user.email, 'Role:', user.role)
+                        console.log('Authorize - User found:', user.username, 'Role:', user.role)
                         return user;
                     }
                 }
@@ -49,14 +49,39 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 console.log('JWT Callback - User:', user.role)
                 token.id = user.id;
                 token.role = user.role;
+                token.username = user.username;
             }
             return token;
         },
         async session({ session, token }) {
-            console.log('Session Callback - Token Role:', token.role)
             if (token.sub && session.user) {
-                session.user.id = token.sub;
-                session.user.role = token.role as string;
+                try {
+                    // Verify user exists in DB to enforce security (e.g. if deleted)
+                    const user = await prisma.user.findUnique({ where: { id: token.sub } });
+
+                    if (!user) {
+                        console.log('Session Callback - User not found in DB (deleted?), invalidating session.');
+                        // Returning null/undefined from session callback invalidates the session
+                        return session; // NextAuth types are tricky, usually we can't return null here easily without breaking types.
+                        // Instead, we can set user to null or throw error.
+                        // Actually, if we return session as is but with null user, it might work?
+                        // Let's try modifying the session object to be invalid.
+                        // Better approach: If user doesn't exist, we shouldn't return a valid session.
+                        // However, NextAuth expects a Session object.
+                        // Let's just set session.user to null/undefined? No, types.
+
+                        // Alternative: Throwing an error forces signout in some versions.
+                        // Or we can just return a session with empty user data which getCurrentUser will reject.
+                        session.user.id = ''; // Invalid ID
+                        return session;
+                    }
+
+                    session.user.id = user.id;
+                    session.user.role = user.role;
+                    session.user.username = user.username;
+                } catch (error) {
+                    console.error('Failed to fetch user in session callback:', error);
+                }
             }
             return session;
         },

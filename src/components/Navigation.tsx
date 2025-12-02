@@ -13,7 +13,8 @@ import {
     PiggyBank,
     HandCoins,
     LogOut,
-    Shield
+    Shield,
+    Settings
 } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 import { logout } from '@/app/actions/auth'
@@ -85,16 +86,23 @@ export default function Navigation({ userRole }: NavigationProps) {
                             {userRole === 'ADMIN' && (
                                 <Link
                                     href="/admin/users"
-                                    className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted hover:text-indigo-400"
-                                    title="Panel de Administración"
+                                    className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                                    title="Panel de Admin"
                                 >
                                     <Shield className="w-5 h-5" />
                                 </Link>
                             )}
+                            <Link
+                                href="/settings"
+                                className="p-2 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                                title="Configuración"
+                            >
+                                <Settings className="w-5 h-5" />
+                            </Link>
                             <ThemeToggle />
                             <button
                                 onClick={() => logout()}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted hover:text-red-500"
+                                className="p-2 rounded-lg text-muted hover:text-danger hover:bg-danger/10 transition-colors"
                                 title="Cerrar Sesión"
                             >
                                 <LogOut className="w-5 h-5" />
@@ -105,53 +113,49 @@ export default function Navigation({ userRole }: NavigationProps) {
             </nav>
 
             {/* Mobile Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe">
-                <div className="bg-card/90 backdrop-blur-xl border-t border-white/10 pb-4 pt-2 px-1">
-                    <div className="flex justify-between items-end">
-                        {navItems.map((item) => {
-                            const Icon = item.icon
-                            const isActive = pathname === item.href
-
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`
-                                        flex flex-col items-center gap-0.5 p-1 rounded-xl transition-all duration-300 flex-1 min-w-0
-                                        ${isActive
-                                            ? 'text-primary'
-                                            : 'text-muted hover:text-foreground'
-                                        }
-                                    `}
-                                >
-                                    <div className={`
-                                        p-1.5 rounded-xl transition-all duration-300
-                                        ${isActive ? 'bg-primary/10' : 'bg-transparent'}
-                                    `}>
-                                        <Icon className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-[9px] font-medium truncate w-full text-center tracking-tight leading-none">{item.label}</span>
-                                </Link>
-                            )
-                        })}
-                        <div className="flex flex-col items-center justify-end p-1 flex-1 min-w-0 gap-1">
-                            {userRole === 'ADMIN' && (
-                                <Link
-                                    href="/admin/users"
-                                    className="p-1.5 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/5 text-muted hover:text-indigo-400 transition-colors"
-                                >
-                                    <Shield className="w-5 h-5" />
-                                </Link>
-                            )}
-                            <ThemeToggle className="p-1.5 w-8 h-8 flex items-center justify-center" />
-                            <button
-                                onClick={() => logout()}
-                                className="p-1.5 w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/5 text-muted hover:text-red-500 transition-colors"
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-safe">
+                <div className="flex justify-around items-center p-4">
+                    {navItems.map((item) => {
+                        const Icon = item.icon
+                        const isActive = pathname === item.href
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex flex-col items-center gap-1 transition-colors ${isActive ? 'text-primary' : 'text-muted'
+                                    }`}
                             >
-                                <LogOut className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
+                                <Icon className="w-6 h-6" />
+                                <span className="text-[10px] font-medium">{item.label}</span>
+                            </Link>
+                        )
+                    })}
+
+                    <Link
+                        href="/settings"
+                        className={`flex flex-col items-center gap-1 transition-colors ${pathname === '/settings' ? 'text-primary' : 'text-muted'}`}
+                    >
+                        <Settings className="w-6 h-6" />
+                        <span className="text-[10px] font-medium">Ajustes</span>
+                    </Link>
+
+                    {userRole === 'ADMIN' && (
+                        <Link
+                            href="/admin/users"
+                            className="flex flex-col items-center gap-1 text-muted hover:text-primary transition-colors"
+                        >
+                            <Shield className="w-6 h-6" />
+                            <span className="text-[10px] font-medium">Admin</span>
+                        </Link>
+                    )}
+
+                    <button
+                        onClick={() => logout()}
+                        className="flex flex-col items-center gap-1 text-muted hover:text-danger transition-colors"
+                    >
+                        <LogOut className="w-6 h-6" />
+                        <span className="text-[10px] font-medium">Salir</span>
+                    </button>
                 </div>
             </nav>
         </>

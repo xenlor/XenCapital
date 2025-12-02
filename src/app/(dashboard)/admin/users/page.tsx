@@ -1,15 +1,16 @@
-import { getUsers, deleteUser, createUser } from '@/app/actions/admin'
+import { getUsers, deleteUser, createUser, resetPassword } from '@/app/actions/admin'
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
-import { Trash2, UserPlus, Shield } from 'lucide-react'
+import { Trash2, UserPlus, Shield, KeyRound } from 'lucide-react'
 import { SubmitButton } from '@/components/ui/SubmitButton'
+import { ResetPasswordForm } from '@/components/ResetPasswordForm'
 
 // Define type for the user returned by getUsers
 type AdminUser = {
     id: string
     name: string | null
-    email: string | null
+    username: string
     role: string
     createdAt: Date
     _count: {
@@ -52,7 +53,7 @@ export default async function AdminUsersPage() {
                             <thead className="bg-slate-950/50 text-slate-400">
                                 <tr>
                                     <th className="p-4 font-medium">Nombre</th>
-                                    <th className="p-4 font-medium">Email</th>
+                                    <th className="p-4 font-medium">Usuario</th>
                                     <th className="p-4 font-medium">Rol</th>
                                     <th className="p-4 font-medium">Registro</th>
                                     <th className="p-4 font-medium">Datos</th>
@@ -63,7 +64,7 @@ export default async function AdminUsersPage() {
                                 {users.map((u) => (
                                     <tr key={u.id} className="hover:bg-slate-800/50 transition-colors">
                                         <td className="p-4 font-medium text-slate-200">{u.name}</td>
-                                        <td className="p-4 text-slate-400">{u.email}</td>
+                                        <td className="p-4 text-slate-400">{u.username}</td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${u.role === 'ADMIN'
                                                 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
@@ -78,7 +79,9 @@ export default async function AdminUsersPage() {
                                         <td className="p-4 text-slate-400 text-xs">
                                             {u._count.ingresos} Ingresos, {u._count.gastos} Gastos
                                         </td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-4 text-right flex justify-end items-center gap-2">
+                                            <ResetPasswordForm userId={u.id} userName={u.username} />
+
                                             {u.id !== user.id && (
                                                 <form action={async () => {
                                                     'use server'
@@ -87,6 +90,7 @@ export default async function AdminUsersPage() {
                                                     <button
                                                         type="submit"
                                                         className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md transition-colors"
+                                                        title="Eliminar usuario"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
@@ -111,27 +115,26 @@ export default async function AdminUsersPage() {
                     <form action={async (formData) => {
                         'use server'
                         const name = formData.get('name')
-                        const email = formData.get('email')
+                        const username = formData.get('username')
                         const password = formData.get('password')
                         const role = formData.get('role')
 
-                        if (name && email && password) {
-                            await createUser({ name, email, password, role })
+                        if (name && username && password) {
+                            await createUser({ name, username, password, role })
                         }
                     }} className="space-y-4">
                         <Input
                             id="name"
                             name="name"
                             label="Nombre"
-                            placeholder="John Doe"
+                            placeholder="Ej: Juan Pérez"
                             required
                         />
                         <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            label="Email"
-                            placeholder="john@example.com"
+                            id="username"
+                            name="username"
+                            label="Usuario"
+                            placeholder="juanperez"
                             required
                         />
                         <Input

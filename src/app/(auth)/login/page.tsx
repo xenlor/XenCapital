@@ -51,8 +51,8 @@ function LoginForm() {
         <form action={dispatch} className="space-y-5">
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-300 ml-1" htmlFor="email">
-                        Correo Electrónico
+                    <label className="text-xs font-medium text-slate-300 ml-1" htmlFor="username">
+                        Usuario
                     </label>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -60,10 +60,10 @@ function LoginForm() {
                         </div>
                         <input
                             className="block w-full rounded-xl border border-white/10 bg-slate-950/50 py-3 pl-10 text-sm text-white placeholder:text-slate-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all"
-                            id="email"
-                            type="email"
-                            name="email"
-                            placeholder="ejemplo@correo.com"
+                            id="username"
+                            type="text"
+                            name="username"
+                            placeholder="Nombre de usuario"
                             required
                         />
                     </div>

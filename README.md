@@ -84,59 +84,43 @@ Aplicación web moderna para gestión de finanzas personales con dashboard inter
 
 7. **Abrir navegador** en http://localhost:3000
 
-## 🐳 Despliegue Fácil (Easy Deploy)
+## 📚 Documentación
 
-El proyecto incluye un script automatizado para desplegar en cualquier servidor con Docker.
+- [📖 Guía de Despliegue](docs/DEPLOYMENT.md) - Instrucciones detalladas para producción.
+- [🗄️ Estructura de Base de Datos](docs/DATABASE.md) - Documentación del esquema y modelos.
 
-1. **Clonar el repositorio**:
-   ```bash
-   git clone https://github.com/xenlor/control-gastos.git
-   cd control-gastos
-   ```
+## 🐳 Despliegue Fácil
 
-2. **Ejecutar el script de despliegue**:
-   ```bash
-   chmod +x deploy.sh
-   ./deploy.sh
-   ```
+El proyecto incluye scripts automatizados para despliegue. Consulta la [Guía de Despliegue](docs/DEPLOYMENT.md) para más detalles.
 
-El script te guiará paso a paso:
-- Verificará dependencias (Docker)
-- Te pedirá configuración (Dominio, Puerto, Contraseña BD)
-- Creará el archivo `.env` automáticamente
-- Levantará los contenedores
-- Inicializará la base de datos y creará el usuario Admin por defecto
+## 👤 Gestión de Usuarios
 
-¡Y listo! Tu aplicación estará corriendo en el puerto que hayas elegido.
+### Panel de Administración
+La aplicación cuenta con una interfaz gráfica para administradores.
+1. Inicia sesión como administrador.
+2. Ve a **Configuración** > **Administración de Usuarios**.
+3. Desde allí puedes crear, eliminar y gestionar usuarios fácilmente.
 
-## 👤 Gestión de Usuarios (Scripts)
-
-La aplicación incluye scripts para gestionar usuarios desde la terminal (útil para el administrador).
-
-### Crear Usuario
-Crea un nuevo usuario con configuración por defecto.
+### Scripts de Emergencia
+Si pierdes acceso al panel, puedes usar los scripts de terminal:
 
 ```bash
-# Uso: node scripts/crear-usuario.js <email> <password> [nombre]
-docker-compose exec app node scripts/crear-usuario.js admin@ejemplo.com 123456 "Admin User"
-```
+# Crear usuario
+docker-compose exec app node scripts/crear-usuario.js email@ejemplo.com 123456 "Nombre"
 
-### Eliminar Usuario
-Script interactivo para borrar un usuario y TODOS sus datos asociados.
-
-```bash
+# Eliminar usuario
 docker-compose exec app node scripts/eliminar-usuario.js
 ```
 
 ## 🔐 Credenciales por Defecto
 
-Si has usado los scripts de ejemplo o la configuración por defecto, estas podrían ser tus credenciales (¡CÁMBIALAS EN PRODUCCIÓN!):
+El seed inicial crea un usuario administrador por defecto:
 
-| Usuario | Email | Contraseña | Rol |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@admin.com` | `123456` | Administrador |
+| Usuario | Contraseña | Rol |
+| :--- | :--- | :--- |
+| **admin** | `123456` | Administrador |
 
-> **Nota:** Para cambiar la contraseña, lo más seguro es eliminar el usuario y volver a crearlo con el script `crear-usuario.js`.
+> **IMPORTANTE:** Cambia esta contraseña inmediatamente después del primer inicio de sesión.
 
 ## 📄 Licencia
 

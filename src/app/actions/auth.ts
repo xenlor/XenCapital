@@ -23,7 +23,7 @@ export async function authenticate(
 
     try {
         await signIn('credentials', {
-            email: formData.get('email'),
+            username: formData.get('username'),
             password: formData.get('password'),
             redirect: false,
         });
@@ -46,7 +46,7 @@ export async function authenticate(
 export async function register(prevState: any, formData: FormData) {
     const validatedFields = SignupFormSchema.safeParse({
         name: formData.get('name'),
-        email: formData.get('email'),
+        username: formData.get('username'),
         password: formData.get('password'),
     });
 
@@ -57,14 +57,14 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, email, password } = validatedFields.data;
+    const { name, username, password } = validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
         await prisma.user.create({
             data: {
                 name,
-                email,
+                username,
                 password: hashedPassword,
             },
         });
