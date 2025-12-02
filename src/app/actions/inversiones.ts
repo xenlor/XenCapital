@@ -35,13 +35,12 @@ export async function addInversion(formData: FormData) {
         const user = await getCurrentUser()
         const tipo = formData.get('tipo') as string
         const nombre = formData.get('nombre') as string
-        const cantidadInicial = parseFloat(formData.get('cantidadInicial') as string)
-        const valorActual = parseFloat(formData.get('valorActual') as string)
+        const monto = parseFloat(formData.get('monto') as string)
         const notas = formData.get('notas') as string || null
         const fechaStr = formData.get('fecha') as string
         const fecha = fechaStr ? new Date(fechaStr) : new Date()
 
-        if (!tipo || !nombre || isNaN(cantidadInicial) || isNaN(valorActual)) {
+        if (!tipo || !nombre || isNaN(monto)) {
             return { success: false, error: 'Todos los campos son requeridos' }
         }
 
@@ -49,8 +48,7 @@ export async function addInversion(formData: FormData) {
             data: {
                 tipo,
                 nombre,
-                cantidadInicial,
-                valorActual,
+                monto,
                 fecha,
                 notas,
                 userId: user.id,
@@ -63,34 +61,6 @@ export async function addInversion(formData: FormData) {
     } catch (error) {
         console.error('Error adding inversion:', error)
         return { success: false, error: 'Error al añadir inversión' }
-    }
-}
-
-export async function updateInversion(id: number, formData: FormData) {
-    try {
-        const user = await getCurrentUser()
-        const valorActual = parseFloat(formData.get('valorActual') as string)
-        const notas = formData.get('notas') as string || null
-
-        if (isNaN(valorActual)) {
-            return { success: false, error: 'Valor actual inválido' }
-        }
-
-        await prisma.inversion.update({
-            where: { id, userId: user.id },
-            data: {
-                valorActual,
-                notas,
-                updatedAt: new Date()
-            }
-        })
-
-        revalidatePath('/inversiones')
-        revalidatePath('/')
-        return { success: true }
-    } catch (error) {
-        console.error('Error updating inversion:', error)
-        return { success: false, error: 'Error al actualizar inversión' }
     }
 }
 
@@ -132,19 +102,11 @@ export async function getInvestmentSummary(month?: number, year?: number) {
         }
 
         // Calculate totals
-        const totalInvertido = allInversiones.reduce((sum, inv) => sum + inv.cantidadInicial, 0)
-        const valorActualTotal = allInversiones.reduce((sum, inv) => sum + inv.valorActual, 0)
-        const gananciaPerdida = valorActualTotal - totalInvertido
-        const roi = totalInvertido > 0 ? ((valorActualTotal - totalInvertido) / totalInvertido) * 100 : 0
-
-        // Calculate monthly investments
-        const invertidoEsteMes = monthlyInversiones.reduce((sum, inv) => sum + inv.cantidadInicial, 0)
+        const totalInvertido = allInversiones.reduce((sum, inv) => sum + inv.monto, 0)
+        const invertidoEsteMes = monthlyInversiones.reduce((sum, inv) => sum + inv.monto, 0)
 
         return {
             totalInvertido,
-            valorActualTotal,
-            gananciaPerdida,
-            roi,
             invertidoEsteMes,
             count: allInversiones.length
         }
@@ -152,9 +114,6 @@ export async function getInvestmentSummary(month?: number, year?: number) {
         console.error('Error getting investment summary:', error)
         return {
             totalInvertido: 0,
-            valorActualTotal: 0,
-            gananciaPerdida: 0,
-            roi: 0,
             invertidoEsteMes: 0,
             count: 0
         }

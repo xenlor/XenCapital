@@ -196,8 +196,7 @@ model Inversion {
   id              Int      @id @default(autoincrement())
   tipo            String   // 'ETF', 'Cripto', 'Accion', 'Fondo'
   nombre          String   // e.g., "VWCE", "Bitcoin", "Apple"
-  cantidadInicial Float    // Initial amount invested
-  valorActual     Float    // Current value
+  monto           Float    // Amount invested
   fecha           DateTime @default(now())
   notas           String?  // Optional notes
   

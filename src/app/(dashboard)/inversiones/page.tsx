@@ -1,12 +1,22 @@
-import { getInversiones, addInversion, deleteInversion, updateInversion, getInvestmentSummary } from '@/app/actions/inversiones'
-import { TrendingUp, Plus, Trash2, LineChart, Calendar, DollarSign, FileText, Edit2 } from 'lucide-react'
+import { getInversiones, addInversion, deleteInversion, getInvestmentSummary } from '@/app/actions/inversiones'
+import { TrendingUp, Plus, Trash2, LineChart, Calendar, DollarSign, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { getAvailableMonths } from '@/app/actions/general'
 
-import { Inversion } from '@prisma/client'
+type Inversion = {
+    id: number
+    tipo: string
+    nombre: string
+    monto: number
+    fecha: Date
+    notas: string | null
+    userId: string
+    createdAt: Date
+    updatedAt: Date
+}
 
 export default async function InversionesPage({
     searchParams,
@@ -33,15 +43,12 @@ export default async function InversionesPage({
         await deleteInversion(id)
     }
 
-    const roiColor = summary.roi >= 0 ? 'text-success' : 'text-danger'
-    const gananciaPerdidaColor = summary.gananciaPerdida >= 0 ? 'text-success' : 'text-danger'
-
     // Group inversiones by tipo
-    const inversionesPorTipo = inversiones.reduce((acc, inv) => {
+    const inversionesPorTipo = inversiones.reduce((acc: Record<string, Inversion[]>, inv) => {
         if (!acc[inv.tipo]) acc[inv.tipo] = []
-        acc[inv.tipo].push(inv)
+        acc[inv.tipo].push(inv as Inversion)
         return acc
-    }, {} as Record<string, Inversion[]>)
+    }, {})
 
     const tipoIcons: Record<string, any> = {
         'ETF': LineChart,
@@ -64,7 +71,7 @@ export default async function InversionesPage({
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="glass-panel p-6 rounded-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <TrendingUp className="w-24 h-24 text-primary" />
@@ -72,7 +79,7 @@ export default async function InversionesPage({
                     <div className="relative z-10">
                         <p className="text-sm font-medium text-muted mb-1">Total Invertido</p>
                         <h3 className="text-3xl font-bold text-foreground">€{summary.totalInvertido.toFixed(2)}</h3>
-                        <p className="text-xs text-muted mt-2">Este mes: €{summary.invertidoEsteMes.toFixed(2)}</p>
+                        <p className="text-xs text-muted mt-2">{summary.count} inversiones</p>
                     </div>
                 </div>
 
@@ -81,22 +88,10 @@ export default async function InversionesPage({
                         <LineChart className="w-24 h-24 text-secondary" />
                     </div>
                     <div className="relative z-10">
-                        <p className="text-sm font-medium text-muted mb-1">Valor Actual</p>
-                        <h3 className="text-3xl font-bold text-foreground">€{summary.valorActualTotal.toFixed(2)}</h3>
-                        <p className={`text-sm mt-2 font-medium ${gananciaPerdidaColor}`}>
-                            {summary.gananciaPerdida >= 0 ? '+' : ''}€{summary.gananciaPerdida.toFixed(2)}
-                        </p>
+                        <p className="text-sm font-medium text-muted mb-1">Invertido Este Mes</p>
+                        <h3 className="text-3xl font-bold text-foreground">€{summary.invertidoEsteMes.toFixed(2)}</h3>
+                        <p className="text-xs text-muted mt-2">{format(new Date(year, month), 'MMMM yyyy', { locale: es })}</p>
                     </div>
-                </div>
-
-                <div className="glass-panel p-6 rounded-2xl flex flex-col justify-center items-center text-center">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${summary.roi >= 0 ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
-                        <TrendingUp className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">ROI</h3>
-                    <p className={`text-3xl font-bold ${roiColor}`}>
-                        {summary.roi >= 0 ? '+' : ''}{summary.roi.toFixed(2)}%
-                    </p>
                 </div>
             </div>
 
@@ -145,30 +140,12 @@ export default async function InversionesPage({
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="cantidadInicial" className="text-sm font-medium text-muted ml-1">Cantidad Inicial (€)</label>
+                                <label htmlFor="monto" className="text-sm font-medium text-muted ml-1">Monto (€)</label>
                                 <div className="relative">
                                     <input
                                         type="number"
-                                        id="cantidadInicial"
-                                        name="cantidadInicial"
-                                        step="0.01"
-                                        required
-                                        className="input-modern !pl-12"
-                                        placeholder="0.00"
-                                    />
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none">
-                                        <DollarSign className="w-5 h-5" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label htmlFor="valorActual" className="text-sm font-medium text-muted ml-1">Valor Actual (€)</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        id="valorActual"
-                                        name="valorActual"
+                                        id="monto"
+                                        name="monto"
                                         step="0.01"
                                         required
                                         className="input-modern !pl-12"
@@ -241,9 +218,7 @@ export default async function InversionesPage({
                                                 {tipo}
                                             </h3>
                                             <div className="space-y-3">
-                                                {invs.map((inv: Inversion) => {
-                                                    const roi = ((inv.valorActual - inv.cantidadInicial) / inv.cantidadInicial) * 100
-                                                    const roiColor = roi >= 0 ? 'text-success' : 'text-danger'
+                                                {(invs as Inversion[]).map((inv) => {
                                                     return (
                                                         <div
                                                             key={inv.id}
@@ -268,13 +243,7 @@ export default async function InversionesPage({
                                                             <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pl-[4rem] sm:pl-0">
                                                                 <div className="text-right">
                                                                     <p className="text-xl font-bold text-foreground tracking-tight">
-                                                                        €{inv.valorActual.toFixed(2)}
-                                                                    </p>
-                                                                    <p className="text-xs text-muted">
-                                                                        Invertido: €{inv.cantidadInicial.toFixed(2)}
-                                                                    </p>
-                                                                    <p className={`text-sm font-medium ${roiColor}`}>
-                                                                        {roi >= 0 ? '+' : ''}{roi.toFixed(2)}%
+                                                                        €{inv.monto.toFixed(2)}
                                                                     </p>
                                                                 </div>
                                                                 <form action={handleDeleteInversion.bind(null, inv.id)}>
