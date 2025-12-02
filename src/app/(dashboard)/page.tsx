@@ -179,10 +179,10 @@ export default async function DashboardPage({
                             <span className="text-muted font-medium">Ahorros</span>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-foreground">€{savingsAnalysis.totalAhorrado.toFixed(2)}</span>
+                            <span className="text-3xl font-bold text-foreground">€{savingsAnalysis.accumulatedSavings.toFixed(2)}</span>
                         </div>
                         <div className="mt-4 flex items-center gap-2 text-sm text-muted">
-                            <span>Este mes</span>
+                            <span>Este mes: €{savingsAnalysis.totalAhorrado.toFixed(2)}</span>
                         </div>
                     </div>
                 </Link>
@@ -200,10 +200,10 @@ export default async function DashboardPage({
                             <span className="text-muted font-medium">Inversiones</span>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-foreground">€{investmentSummary.invertidoEsteMes.toFixed(2)}</span>
+                            <span className="text-3xl font-bold text-foreground">€{investmentSummary.totalInvertido.toFixed(2)}</span>
                         </div>
                         <div className="mt-4 flex items-center gap-2 text-sm text-muted">
-                            <span>Este mes</span>
+                            <span>Este mes: €{investmentSummary.invertidoEsteMes.toFixed(2)}</span>
                         </div>
                     </div>
                 </Link>
