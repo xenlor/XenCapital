@@ -62,7 +62,7 @@ export default function Navigation({ userRole }: NavigationProps) {
 
                         {/* Desktop Menu */}
                         <div className="flex-1 flex items-center min-w-0 mx-4">
-                            <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin w-full px-2">
+                            <div className="flex items-center gap-1 w-full px-2 overflow-visible">
                                 {navItems.map((item) => {
                                     const Icon = item.icon
                                     const isActive = pathname === item.href || ('submenu' in item && item.submenu?.some(sub => pathname === sub.href))
@@ -85,7 +85,7 @@ export default function Navigation({ userRole }: NavigationProps) {
                                                     <span className="text-sm tracking-wide">{item.label}</span>
                                                 </Link>
                                                 {/* Dropdown Menu */}
-                                                <div className="absolute top-full left-0 mt-1 hidden group-hover:block z-50 min-w-[180px]">
+                                                <div className="absolute top-full left-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] min-w-[180px]">
                                                     <div className="bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-lg overflow-hidden">
                                                         {item.submenu.map((subItem) => {
                                                             const SubIcon = subItem.icon
