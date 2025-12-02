@@ -60,7 +60,7 @@ export async function payCuota(id: number) {
         const user = await getCurrentUser()
         const plazo = await prisma.plazo.findUnique({ where: { id } })
 
-        if (!plazo) return { success: false, error: 'Plazo no encontrado' }
+        if (!plazo || plazo.userId !== user.id) return { success: false, error: 'Plazo no encontrado' }
         if (plazo.cuotasPagadas >= plazo.totalCuotas) return { success: false, error: 'Plazo ya pagado' }
 
         const updatedPlazo = await prisma.plazo.update({

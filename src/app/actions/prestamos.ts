@@ -92,7 +92,7 @@ export async function togglePrestamoPagado(id: number, pagado: boolean) {
             where: { id }
         })
 
-        if (!prestamo) {
+        if (!prestamo || prestamo.userId !== user.id) {
             return { success: false, error: 'Préstamo no encontrado' }
         }
 
