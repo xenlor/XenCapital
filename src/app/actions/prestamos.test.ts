@@ -9,7 +9,20 @@ vi.mock('@/lib/prisma', () => ({
             findMany: vi.fn(),
             create: vi.fn(),
             delete: vi.fn(),
-            findUnique: vi.fn()
+            findUnique: vi.fn(),
+            update: vi.fn()
+        },
+        categoria: {
+            findFirst: vi.fn(),
+            create: vi.fn()
+        },
+        gasto: {
+            create: vi.fn(),
+            delete: vi.fn()
+        },
+        ingreso: {
+            create: vi.fn(),
+            delete: vi.fn()
         }
     }
 }))
@@ -28,6 +41,40 @@ describe('Prestamos Actions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.mocked(getCurrentUser).mockResolvedValue(mockUser as any)
+
+        // Mock categoria findFirst/create
+        vi.mocked(prisma.categoria.findFirst).mockResolvedValue({
+            id: 1,
+            nombre: 'Préstamos',
+            color: '#64748B',
+            icono: 'HandCoins',
+            userId: 'user-123',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        } as any)
+
+        // Mock gasto create
+        vi.mocked(prisma.gasto.create).mockResolvedValue({
+            id: 1,
+            monto: 500,
+            descripcion: 'Préstamo a John Doe',
+            categoriaId: 1,
+            fecha: new Date('2023-11-01'),
+            userId: 'user-123'
+        } as any)
+
+        // Mock prestamo create
+        vi.mocked(prisma.prestamo.create).mockResolvedValue({
+            id: 1,
+            persona: 'John Doe',
+            monto: 500,
+            fechaPrestamo: new Date('2023-11-01'),
+            fechaRecordatorio: new Date('2023-12-01'),
+            pagado: false,
+            gastoId: 1,
+            ingresoId: null,
+            userId: 'user-123'
+        } as any)
     })
 
     describe('addPrestamo', () => {
@@ -40,6 +87,8 @@ describe('Prestamos Actions', () => {
 
             await addPrestamo(formData)
 
+            expect(prisma.categoria.findFirst).toHaveBeenCalled()
+            expect(prisma.gasto.create).toHaveBeenCalled()
             expect(prisma.prestamo.create).toHaveBeenCalled()
         })
     })

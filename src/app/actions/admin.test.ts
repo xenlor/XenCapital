@@ -79,6 +79,21 @@ describe('Admin Actions', () => {
                         create: {
                             porcentajeAhorro: 20.0
                         }
+                    },
+                    categorias: {
+                        createMany: {
+                            data: expect.arrayContaining([
+                                expect.objectContaining({ nombre: 'Comida' }),
+                                expect.objectContaining({ nombre: 'Transporte' }),
+                                expect.objectContaining({ nombre: 'Vivienda' }),
+                                expect.objectContaining({ nombre: 'Ocio' }),
+                                expect.objectContaining({ nombre: 'Salud' }),
+                                expect.objectContaining({ nombre: 'Educación' }),
+                                expect.objectContaining({ nombre: 'Préstamos' }),
+                                expect.objectContaining({ nombre: 'Plazos' }),
+                                expect.objectContaining({ nombre: 'Gastos Compartidos' })
+                            ])
+                        }
                     }
                 }
             })

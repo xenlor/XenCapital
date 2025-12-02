@@ -41,7 +41,17 @@ describe('Ahorros Actions', () => {
 
     describe('getSavingsAnalysis', () => {
         it('calculates savings percentage correctly', async () => {
-            vi.mocked(prisma.ahorro.aggregate).mockResolvedValue({ _sum: { monto: 200 } } as any)
+            // Mock ahorro.aggregate to return different values based on whether fecha filter exists
+            vi.mocked(prisma.ahorro.aggregate).mockImplementation((args: any) => {
+                if (args.where.fecha) {
+                    // Monthly savings (with date filter)
+                    return Promise.resolve({ _sum: { monto: 200 } }) as any
+                } else {
+                    // Accumulated savings (no date filter)
+                    return Promise.resolve({ _sum: { monto: 500 } }) as any
+                }
+            })
+
             vi.mocked(prisma.ingreso.aggregate).mockResolvedValue({ _sum: { monto: 1000 } } as any)
             vi.mocked(prisma.configuracion.findUnique).mockResolvedValue({
                 porcentajeAhorro: 20
@@ -52,6 +62,7 @@ describe('Ahorros Actions', () => {
             expect(result).toEqual({
                 totalIngresos: 1000,
                 totalAhorrado: 200,
+                accumulatedSavings: 500, // All-time savings
                 targetAhorro: 200, // 1000 * 0.20
                 percentageSaved: 20 // (200 / 1000) * 100
             })
