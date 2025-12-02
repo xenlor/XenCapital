@@ -42,12 +42,12 @@ export default async function AdminUsersPage() {
             </div>
 
             {/* Users List Card */}
-            <div className="glass-panel rounded-xl overflow-hidden">
+            <div className="glass-panel rounded-xl">
                 <div className="p-6 border-b border-border flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
                     <h2 className="text-xl font-semibold text-foreground">Usuarios Registrados</h2>
                 </div>
-                <div className="p-0">
+                <div className="p-0 overflow-visible">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-muted/50 text-muted-foreground">
