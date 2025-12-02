@@ -112,6 +112,22 @@ docker-compose exec app node scripts/crear-usuario.js email@ejemplo.com 123456 "
 docker-compose exec app node scripts/eliminar-usuario.js
 ```
 
+## 📦 Copias de Seguridad
+
+Para realizar una copia de seguridad de la base de datos:
+
+```bash
+# Exportar base de datos
+docker-compose exec postgres pg_dump -U postgres control_gastos > backup.sql
+```
+
+Para restaurar una copia de seguridad:
+
+```bash
+# Importar base de datos (¡Cuidado! Sobreescribe datos)
+cat backup.sql | docker-compose exec -T postgres psql -U postgres -d control_gastos
+```
+
 ## 🔐 Credenciales por Defecto
 
 El seed inicial crea un usuario administrador por defecto:
