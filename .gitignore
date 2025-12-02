@@ -34,7 +34,7 @@ page_test_output.txt
 
 # env files
 .env*
-!.env.example
+
 
 # vercel
 .vercel
