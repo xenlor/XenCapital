@@ -15,7 +15,14 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
+# Detectar versión de Docker Compose
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker compose"
+    echo -e "${GREEN}✅ Docker Compose v2 detectado.${NC}"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+    echo -e "${GREEN}✅ Docker Compose v1 detectado.${NC}"
+else
     echo -e "${RED}❌ Docker Compose no está instalado. Por favor instálalo primero.${NC}"
     exit 1
 fi
@@ -56,21 +63,21 @@ fi
 
 # 3. Levantar contenedores
 echo -e "\n${BLUE}3. Levantando servicios con Docker...${NC}"
-docker-compose up -d --build
+$DOCKER_COMPOSE_CMD up -d --build
 
 echo -e "${BLUE}⏳ Esperando a que la base de datos esté lista (10s)...${NC}"
 sleep 10
 
 # 4. Inicializar base de datos
 echo -e "\n${BLUE}4. Inicializando base de datos...${NC}"
-docker-compose exec -T app npx prisma db push
+$DOCKER_COMPOSE_CMD exec -T app npx prisma db push
 
 # 5. Ejecutar Seed (Crear Admin)
 echo -e "\n${BLUE}5. Configurando usuario administrador...${NC}"
-docker-compose exec -T app node prisma/seed.js
+$DOCKER_COMPOSE_CMD exec -T app node prisma/seed.js
 
 echo -e "\n${BLUE}6. Asegurando rol de administrador...${NC}"
-docker-compose exec -T app node scripts/fix-admin.js admin
+$DOCKER_COMPOSE_CMD exec -T app node scripts/fix-admin.js admin
 
 echo -e "\n${GREEN}✅ ¡Despliegue completado con éxito!${NC}"
 echo -e "Tu aplicación debería estar corriendo en http://localhost:3000 (o configurada en tu dominio si usas Nginx)."
