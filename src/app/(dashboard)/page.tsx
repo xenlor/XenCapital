@@ -103,7 +103,7 @@ export default async function DashboardPage({
                             <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
                                 <Wallet className="w-6 h-6" />
                             </div>
-                            <span className="text-muted font-medium">Balance Total</span>
+                            <span className="text-muted font-medium">Balance Mensual</span>
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-bold text-foreground">€{balance.toFixed(2)}</span>
