@@ -57,3 +57,5 @@ scripts/*.ps1
 # Sensitive Documentation
 docs/ENV_REFERENCE.txt
 control-gastos-update.zip
+scripts/fix-admin.js
+scripts/seed-fake-data.js
