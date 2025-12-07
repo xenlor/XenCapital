@@ -25,23 +25,7 @@ Aplicación web moderna para gestión de finanzas personales con dashboard inter
 - 🌙 **Interfaz Moderna** - Diseño dark mode con efectos glassmorphism
 - 📱 **Diseño Responsive** - Funciona perfectamente en móviles y escritorio
 
-## 📸 Galería
 
-| Dashboard | Inversiones |
-|---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Inversiones](docs/screenshots/inversiones.png) |
-
-| Ingresos | Gastos |
-|---|---|
-| ![Ingresos](docs/screenshots/ingresos.png) | ![Gastos](docs/screenshots/gastos.png) |
-
-| Préstamos | Plazos |
-|---|---|
-| ![Préstamos](docs/screenshots/prestamos.png) | ![Plazos](docs/screenshots/plazos.png) |
-
-| Móvil | |
-|---|---|
-| ![Móvil](docs/screenshots/mobile.png) | |
 
 ## 🛠️ Stack Tecnológico
 
@@ -173,3 +157,21 @@ Este proyecto es software privado. Todos los derechos reservados.
 ---
 
 **Última actualización**: Diciembre 2024
+
+## 📸 Galería
+
+| Dashboard | Inversiones |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Inversiones](docs/screenshots/inversiones.png) |
+
+| Ingresos | Gastos |
+|---|---|
+| ![Ingresos](docs/screenshots/ingresos.png) | ![Gastos](docs/screenshots/gastos.png) |
+
+| Préstamos | Plazos |
+|---|---|
+| ![Préstamos](docs/screenshots/prestamos.png) | ![Plazos](docs/screenshots/plazos.png) |
+
+| Móvil | |
+|---|---|
+| ![Móvil](docs/screenshots/mobile.png) | |
