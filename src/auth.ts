@@ -61,17 +61,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     if (!user) {
                         console.log('Session Callback - User not found in DB (deleted?), invalidating session.');
-                        // Returning null/undefined from session callback invalidates the session
-                        return session; // NextAuth types are tricky, usually we can't return null here easily without breaking types.
-                        // Instead, we can set user to null or throw error.
-                        // Actually, if we return session as is but with null user, it might work?
-                        // Let's try modifying the session object to be invalid.
-                        // Better approach: If user doesn't exist, we shouldn't return a valid session.
-                        // However, NextAuth expects a Session object.
-                        // Let's just set session.user to null/undefined? No, types.
-
-                        // Alternative: Throwing an error forces signout in some versions.
-                        // Or we can just return a session with empty user data which getCurrentUser will reject.
                         session.user.id = ''; // Invalid ID
                         return session;
                     }
@@ -85,6 +74,11 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             }
             return session;
         },
+    },
+    session: {
+        strategy: 'jwt',
+        maxAge: 30 * 60, // 30 minutes
+        updateAge: 5 * 60, // 5 minutes (update session if accessed after 5 mins)
     },
     secret: process.env.AUTH_SECRET,
 });
