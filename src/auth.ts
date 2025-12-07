@@ -4,7 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import type { User } from '@/lib/definitions'; // We might need to define this or use Prisma type
+import type { User } from '@/lib/definitions'; // Podríamos necesitar definir esto o usar el tipo de Prisma
 
 async function getUser(username: string): Promise<any> {
     try {
@@ -56,12 +56,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         async session({ session, token }) {
             if (token.sub && session.user) {
                 try {
-                    // Verify user exists in DB to enforce security (e.g. if deleted)
+                    // Verificar que el usuario existe en BD para reforzar seguridad (ej. si fue eliminado)
                     const user = await prisma.user.findUnique({ where: { id: token.sub } });
 
                     if (!user) {
                         console.log('Session Callback - User not found in DB (deleted?), invalidating session.');
-                        session.user.id = ''; // Invalid ID
+                        session.user.id = ''; // ID Inválido
                         return session;
                     }
 
@@ -77,8 +77,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     },
     session: {
         strategy: 'jwt',
-        maxAge: 30 * 60, // 30 minutes
-        updateAge: 5 * 60, // 5 minutes (update session if accessed after 5 mins)
+        maxAge: 30 * 60, // 30 minutos
+        updateAge: 5 * 60, // 5 minutos (actualizar sesión si se accede después de 5 min)
     },
     secret: process.env.AUTH_SECRET,
 });

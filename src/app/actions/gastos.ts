@@ -77,9 +77,9 @@ export async function addGasto(formData: FormData) {
 
 export async function deleteGasto(id: number) {
     try {
-        // Check if this gasto is linked to a shared expense
+        // Comprobar si este gasto está vinculado a un gasto compartido
         const user = await getCurrentUser()
-        // Check if this gasto is linked to a shared expense AND belongs to user
+        // Comprobar si este gasto está vinculado y pertenece al usuario
         const gasto = await prisma.gasto.findFirst({
             where: {
                 id,
@@ -93,12 +93,12 @@ export async function deleteGasto(id: number) {
         }
 
         if (gasto?.gastoCompartidoId) {
-            // If linked, delete the shared expense (which will cascade delete this gasto)
+            // Si está vinculado, eliminar el gasto compartido (lo cual eliminará en cascada este gasto)
             await prisma.gastoCompartido.delete({
                 where: { id: gasto.gastoCompartidoId }
             })
         } else {
-            // If not linked, just delete the gasto
+            // Si no está vinculado, solo eliminar el gasto
             await prisma.gasto.delete({
                 where: { id },
             })

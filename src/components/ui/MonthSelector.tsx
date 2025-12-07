@@ -18,7 +18,7 @@ export function MonthSelector({ availableDates }: MonthSelectorProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // Get current selection from URL or default to current date
+    // Obtener selección actual de la URL o usar fecha actual por defecto
     const currentMonth = searchParams.get('month')
         ? parseInt(searchParams.get('month')!)
         : new Date().getMonth()
@@ -27,21 +27,21 @@ export function MonthSelector({ availableDates }: MonthSelectorProps) {
         ? parseInt(searchParams.get('year')!)
         : new Date().getFullYear()
 
-    // Find index of current selection in available dates
-    // If not found (e.g. manually entered URL), default to 0 (newest)
+    // Encontrar índice de la selección actual en las fechas disponibles
+    // Si no se encuentra (ej. URL introducida manualmente), por defecto 0 (más reciente)
     const currentIndex = availableDates.findIndex(
         d => d.month === currentMonth && d.year === currentYear
     )
 
-    // If the current URL params don't match any available date, 
-    // we might want to redirect or just show the closest one. 
-    // For now, let's just use the date from params for display, 
-    // but navigation will jump to available ones.
+    // Si los params actuales no coinciden con ninguna fecha disponible,
+    // podríamos querer redirigir o mostrar la más cercana.
+    // Por ahora, usaremos la fecha de los params para mostrar,
+    // pero la navegación saltará a las disponibles.
     const displayDate = new Date(currentYear, currentMonth)
 
     const handlePrev = () => {
-        // "Prev" means going back in time (older dates)
-        // In our descending sorted list, "older" means higher index
+        // "Prev" significa ir hacia atrás en el tiempo (fechas más antiguas)
+        // En nuestra lista ordenada descendente, "más antiguo" significa índice mayor
         const nextIndex = currentIndex === -1 ? 0 : currentIndex + 1
         if (nextIndex < availableDates.length) {
             updateParams(availableDates[nextIndex])
@@ -49,8 +49,8 @@ export function MonthSelector({ availableDates }: MonthSelectorProps) {
     }
 
     const handleNext = () => {
-        // "Next" means going forward in time (newer dates)
-        // In our descending sorted list, "newer" means lower index
+        // "Next" significa ir hacia adelante en el tiempo (fechas más nuevas)
+        // En nuestra lista ordenada descendente, "más nuevo" significa índice menor
         const nextIndex = currentIndex === -1 ? 0 : currentIndex - 1
         if (nextIndex >= 0) {
             updateParams(availableDates[nextIndex])

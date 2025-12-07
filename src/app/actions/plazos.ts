@@ -70,8 +70,8 @@ export async function payCuota(id: number) {
             },
         })
 
-        // Create expense for this payment
-        // 1. Find or create "Compras a plazos" category
+        // Crear gasto para este pago
+        // 1. Buscar o crear la categoría "Compras a plazos"
         let categoria = await prisma.categoria.findFirst({
             where: { nombre: 'Compras a plazos', userId: user.id }
         })
@@ -87,7 +87,7 @@ export async function payCuota(id: number) {
             })
         }
 
-        // 2. Create the expense
+        // 2. Crear el gasto
         await prisma.gasto.create({
             data: {
                 monto: plazo.montoCuota,
@@ -129,7 +129,7 @@ export async function revertCuota(id: number) {
         if (!plazo) return { success: false, error: 'Plazo no encontrado' }
         if (plazo.cuotasPagadas <= 0) return { success: false, error: 'No hay cuotas para revertir' }
 
-        // 1. Decrement cuotasPagadas
+        // 1. Decrementar cuotasPagadas
         const updatedPlazo = await prisma.plazo.update({
             where: { id },
             data: {
@@ -137,11 +137,11 @@ export async function revertCuota(id: number) {
             },
         })
 
-        // 2. Find and delete the corresponding expense
-        // We look for an expense with the exact description generated during payment
-        // Description format: `Cuota ${cuotasPagadas} de ${totalCuotas} - ${descripcion}`
-        // Note: We use the *original* cuotasPagadas (before decrement) which corresponds to the expense we want to delete.
-        // Since we already decremented, we use updatedPlazo.cuotasPagadas + 1
+        // 2. Buscar y eliminar el gasto correspondiente
+        // Buscamos un gasto con la descripción exacta generada durante el pago
+        // Formato descripción: `Cuota ${cuotasPagadas} de ${totalCuotas} - ${descripcion}`
+        // Nota: Usamos las cuotasPagadas *originales* (antes de decrementar) que corresponden al gasto a borrar.
+        // Como ya decrementamos, usamos updatedPlazo.cuotasPagadas + 1
         const cuotaRevertida = updatedPlazo.cuotasPagadas + 1
         const descripcionGasto = `Cuota ${cuotaRevertida} de ${plazo.totalCuotas} - ${plazo.descripcion}`
 

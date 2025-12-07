@@ -84,12 +84,12 @@ export async function getInvestmentSummary(month?: number, year?: number) {
     try {
         const user = await getCurrentUser()
 
-        // Get all investments
+        // Obtener todas las inversiones
         const allInversiones = await prisma.inversion.findMany({
             where: { userId: user.id }
         })
 
-        // Get monthly investments if month/year provided
+        // Obtener inversiones mensuales si se provee mes/año
         let monthlyInversiones = allInversiones
         if (month !== undefined && year !== undefined) {
             const startDate = new Date(year, month, 1)
@@ -101,7 +101,7 @@ export async function getInvestmentSummary(month?: number, year?: number) {
             })
         }
 
-        // Calculate totals
+        // Calcular totales
         const totalInvertido = allInversiones.reduce((sum, inv) => sum + inv.monto, 0)
         const invertidoEsteMes = monthlyInversiones.reduce((sum, inv) => sum + inv.monto, 0)
 

@@ -11,7 +11,7 @@ type DialogContextType = {
 const DialogContext = React.createContext<DialogContextType | undefined>(undefined)
 
 const Dialog = ({ children, open, onOpenChange }: { children: React.ReactNode, open?: boolean, onOpenChange?: (open: boolean) => void }) => {
-    // Support controlled and uncontrolled state
+    // Soporte para estado controlado y no controlado
     const [internalOpen, setInternalOpen] = React.useState(false)
     const isControlled = open !== undefined
     const currentOpen = isControlled ? open : internalOpen
@@ -36,8 +36,8 @@ const DialogTrigger = React.forwardRef<
 >(({ children, onClick, asChild, ...props }, ref) => {
     const context = React.useContext(DialogContext)
 
-    // If asChild is true, we assume the child is a button-like element and we just clone it 
-    // to add the onClick handler.
+    // Si asChild es true, asumimos que el hijo es un elemento tipo botón y solo lo clonamos
+    // para añadir el manejador onClick.
     if (asChild && React.isValidElement(children)) {
         return React.cloneElement(children as React.ReactElement<any>, {
             onClick: (e: React.MouseEvent) => {

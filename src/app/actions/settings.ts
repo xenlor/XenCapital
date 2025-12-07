@@ -24,7 +24,7 @@ export async function changePassword(prevState: any, formData: FormData) {
         return { success: false, error: 'La contraseña debe tener al menos 6 caracteres' }
     }
 
-    // Verify current password
+    // Verificar contraseña actual
     const dbUser = await prisma.user.findUnique({
         where: { id: user.id }
     })
@@ -39,7 +39,7 @@ export async function changePassword(prevState: any, formData: FormData) {
         return { success: false, error: 'La contraseña actual es incorrecta' }
     }
 
-    // Update password
+    // Actualizar contraseña
     const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     await prisma.user.update({

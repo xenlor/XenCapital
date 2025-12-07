@@ -12,7 +12,7 @@ export type AvailableDate = {
 export async function getAvailableMonths(): Promise<AvailableDate[]> {
     try {
         const user = await getCurrentUser()
-        // Fetch all dates from expenses, incomes, savings, and investments
+        // Obtener todas las fechas de gastos, ingresos, ahorros e inversiones
         const [gastos, ingresos, ahorros, inversiones] = await Promise.all([
             prisma.gasto.findMany({
                 where: { userId: user.id },
@@ -36,16 +36,16 @@ export async function getAvailableMonths(): Promise<AvailableDate[]> {
             })
         ])
 
-        // Combine all dates
+        // Combinar todas las fechas
         const allDates = [
             ...gastos.map(g => g.fecha),
             ...ingresos.map(i => i.fecha),
             ...ahorros.map(a => a.fecha),
             ...inversiones.map(inv => inv.fecha),
-            new Date() // Always include current date
+            new Date() // Incluir siempre la fecha actual
         ]
 
-        // Create a Set of unique "Year-Month" strings to filter duplicates
+        // Crear un Set de strings únicos "Año-Mes" para filtrar duplicados
         const uniqueMonths = new Set<string>()
         const availableDates: AvailableDate[] = []
 
@@ -58,12 +58,12 @@ export async function getAvailableMonths(): Promise<AvailableDate[]> {
                 availableDates.push({
                     month: d.getMonth(),
                     year: d.getFullYear(),
-                    label: key // Temporary label, not used for display
+                    label: key // Etiqueta temporal, no usada para visualización
                 })
             }
         })
 
-        // Sort descending (newest first)
+        // Ordenar descendente (más recientes primero)
         return availableDates.sort((a, b) => {
             if (a.year !== b.year) return b.year - a.year
             return b.month - a.month
@@ -71,7 +71,7 @@ export async function getAvailableMonths(): Promise<AvailableDate[]> {
 
     } catch (error) {
         console.error('Error fetching available months:', error)
-        // Return at least current month on error
+        // Retornar al menos el mes actual en caso de error
         const now = new Date()
         return [{
             month: now.getMonth(),

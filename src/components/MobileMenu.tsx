@@ -29,7 +29,7 @@ interface MobileMenuProps {
 export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuProps) {
     const pathname = usePathname()
 
-    // Close on escape key
+    // Cerrar con tecla escape
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose()

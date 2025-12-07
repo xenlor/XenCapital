@@ -28,7 +28,7 @@ export async function addPrestamo(formData: FormData) {
         const fechaPrestamo = new Date(formData.get('fechaPrestamo') as string)
         const fechaRecordatorioStr = formData.get('fechaRecordatorio') as string
 
-        // Make fechaRecordatorio optional
+        // Hacer fechaRecordatorio opcional
         const fechaRecordatorio = fechaRecordatorioStr && fechaRecordatorioStr.trim()
             ? new Date(fechaRecordatorioStr)
             : null
@@ -37,7 +37,7 @@ export async function addPrestamo(formData: FormData) {
             return { success: false, error: 'Campos requeridos faltantes' }
         }
 
-        // 1. Find or Create "Préstamos" Category
+        // 1. Buscar o Crear Categoría "Préstamos"
         let categoria = await prisma.categoria.findFirst({
             where: {
                 nombre: 'Préstamos',
@@ -46,7 +46,7 @@ export async function addPrestamo(formData: FormData) {
         })
 
         if (!categoria) {
-            // Try to find global category or create user specific
+            // Intentar encontrar categoría global o crear específica para el usuario
             categoria = await prisma.categoria.create({
                 data: {
                     nombre: 'Préstamos',
@@ -57,7 +57,7 @@ export async function addPrestamo(formData: FormData) {
             })
         }
 
-        // 2. Create Gasto (Loan Outflow)
+        // 2. Crear Gasto (Salida por Préstamo)
         const gasto = await prisma.gasto.create({
             data: {
                 descripcion: `Préstamo a ${persona}`,
@@ -68,7 +68,7 @@ export async function addPrestamo(formData: FormData) {
             }
         })
 
-        // 3. Create Prestamo linked to Gasto
+        // 3. Crear Préstamo vinculado al Gasto
         await prisma.prestamo.create({
             data: {
                 persona,
@@ -106,7 +106,7 @@ export async function togglePrestamoPagado(id: number, pagado: boolean) {
         }
 
         if (pagado) {
-            // Create Ingreso (Loan Repayment)
+            // Crear Ingreso (Devolución del Préstamo)
             const ingreso = await prisma.ingreso.create({
                 data: {
                     descripcion: `Devolución préstamo ${prestamo.persona}`,
@@ -124,7 +124,7 @@ export async function togglePrestamoPagado(id: number, pagado: boolean) {
                 }
             })
         } else {
-            // Remove Ingreso if exists
+            // Eliminar Ingreso si existe
             if (prestamo.ingresoId) {
                 await prisma.ingreso.delete({
                     where: { id: prestamo.ingresoId }
@@ -156,7 +156,7 @@ export async function deletePrestamo(id: number) {
         })
 
         if (prestamo) {
-            // Delete associated transactions
+            // Eliminar transacciones asociadas
             if (prestamo.gastoId) {
                 await prisma.gasto.delete({
                     where: { id: prestamo.gastoId }

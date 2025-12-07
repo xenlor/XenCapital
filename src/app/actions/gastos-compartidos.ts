@@ -104,7 +104,7 @@ export async function addGastoCompartido(formData: FormData) {
             return { success: false, error: 'Descripción y monto son requeridos' }
         }
 
-        // 1. Fetch current members to calculate split
+        // 1. Obtener miembros actuales para calcular la división
         const miembros = await prisma.miembro.findMany({
             where: { userId: user.id }
         })
@@ -117,7 +117,7 @@ export async function addGastoCompartido(formData: FormData) {
             return { success: false, error: 'El ingreso total de los miembros es 0' }
         }
 
-        // 2. Create GastoCompartido
+        // 2. Crear GastoCompartido
         const gastoCompartido = await prisma.gastoCompartido.create({
             data: {
                 descripcion,
@@ -127,13 +127,13 @@ export async function addGastoCompartido(formData: FormData) {
             },
         })
 
-        // 3. Create MiembroGastoCompartido (snapshots) and individual Gasto for user
+        // 3. Crear MiembroGastoCompartido (instantáneas) y Gasto individual para el usuario
         for (const miembro of miembros) {
-            // Calculate share
+            // Calcular partición
             const porcentaje = miembro.ingresoMensual / totalIngresos
             const montoCorrespondiente = montoTotal * porcentaje
 
-            // Create snapshot linked to this expense
+            // Crear instantánea vinculada a este gasto
             await prisma.miembroGastoCompartido.create({
                 data: {
                     nombre: miembro.nombre,
@@ -143,9 +143,9 @@ export async function addGastoCompartido(formData: FormData) {
                 },
             })
 
-            // If this member is the main user, create a Gasto record
+            // Si este miembro es el usuario principal, crear un registro de Gasto
             if (miembro.esUsuario) {
-                // Find or create 'Gastos Compartidos' category
+                // Buscar o crear categoría 'Gastos Compartidos'
                 let categoria = await prisma.categoria.findFirst({ where: { nombre: 'Gastos Compartidos' } })
                 if (!categoria) {
                     categoria = await prisma.categoria.create({
@@ -168,7 +168,7 @@ export async function addGastoCompartido(formData: FormData) {
         }
 
         revalidatePath('/gastos-compartidos')
-        revalidatePath('/') // Update dashboard as we added a Gasto
+        revalidatePath('/') // Actualizar dashboard ya que añadimos un Gasto
         return { success: true }
     } catch (error) {
         console.error('Error adding gasto compartido:', error)
@@ -190,6 +190,7 @@ export async function deleteGastoCompartido(id: number) {
         return { success: false, error: 'Error al eliminar gasto compartido' }
     }
 }
+
 export async function updateGastoCompartido(id: number, formData: FormData) {
     try {
         const user = await getCurrentUser()
@@ -201,7 +202,7 @@ export async function updateGastoCompartido(id: number, formData: FormData) {
             return { success: false, error: 'Descripción, monto y al menos un miembro son requeridos' }
         }
 
-        // 1. Fetch selected members
+        // 1. Obtener miembros seleccionados
         const miembros = await prisma.miembro.findMany({
             where: {
                 id: { in: miembrosIds },
@@ -218,7 +219,15 @@ export async function updateGastoCompartido(id: number, formData: FormData) {
             return { success: false, error: 'El ingreso total de los miembros seleccionados es 0' }
         }
 
-        // 2. Update GastoCompartido
+        // Necesitamos obtener la fecha original para preservarla en el nuevo Gasto si es posible, o usar la actual.
+        // Consultamos la fecha original antes de actualizar nada.
+        const originalGastoCompartido = await prisma.gastoCompartido.findUnique({
+            where: { id },
+            select: { fecha: true }
+        })
+        const fechaGasto = originalGastoCompartido?.fecha || new Date()
+
+        // 2. Actualizar GastoCompartido
         await prisma.gastoCompartido.update({
             where: { id },
             data: {
@@ -227,22 +236,17 @@ export async function updateGastoCompartido(id: number, formData: FormData) {
             },
         })
 
-        // 3. Delete existing snapshots and linked personal expense
+        // 3. Eliminar instantáneas existentes y gasto personal vinculado
         await prisma.miembroGastoCompartido.deleteMany({
             where: { gastoCompartidoId: id }
         })
 
-        // Note: The linked Gasto (personal expense) will be deleted via Cascade if we were deleting the GastoCompartido,
-        // but here we are keeping it. However, since we are recalculating everything, it's safer to delete the old Gasto
-        // and create a new one to ensure the amount is correct.
-        // But wait, Gasto has a relation to GastoCompartido. If we delete the GastoCompartido, the Gasto is deleted.
-        // But we are UPDATING GastoCompartido.
-        // So we should manually find and delete the linked Gasto.
+        // Eliminar el Gasto vinculado (personal) para recrearlo con el monto correcto
         await prisma.gasto.deleteMany({
             where: { gastoCompartidoId: id }
         })
 
-        // 4. Create new snapshots and personal expense
+        // 4. Crear nuevas instantáneas y gasto personal
         for (const miembro of miembros) {
             const porcentaje = miembro.ingresoMensual / totalIngresos
             const montoCorrespondiente = montoTotal * porcentaje
@@ -269,33 +273,13 @@ export async function updateGastoCompartido(id: number, formData: FormData) {
                         descripcion: `${descripcion} (Parte proporcional)`,
                         monto: parseFloat(montoCorrespondiente.toFixed(2)),
                         categoriaId: categoria.id,
-                        fecha: new Date(), // Or keep original date? Ideally keep original date.
-                        // We should probably fetch the original date from GastoCompartido if we want to preserve it.
-                        // But for now, let's use the current date or maybe we should have fetched the original date.
-                        // Let's fetch the original date first.
+                        fecha: fechaGasto, // Mantener fecha original
                         esCompartido: true,
                         gastoCompartidoId: id,
                         userId: user.id,
                     },
                 })
             }
-        }
-
-        // Correction: We should preserve the original date.
-        // Let's fetch it at the beginning.
-        // Actually, we can just update the date in the Gasto creation if we had it.
-        // Since we didn't fetch it, let's do a quick fix:
-        // We can assume the user doesn't want to change the date for now, or we can add a date field to the edit form.
-        // For now, let's just use the current date as a simple update, or better, let's fetch the date.
-
-        // Refined logic:
-        // We need to fetch the original date to preserve it in the new Gasto.
-        const originalGasto = await prisma.gastoCompartido.findUnique({ where: { id }, select: { fecha: true } })
-        if (originalGasto) {
-            // Update the Gasto creation above to use originalGasto.fecha
-            // Since I can't easily edit the loop above without re-writing the whole block, 
-            // I will just update the Gasto date after creation or include it in the loop.
-            // I'll rewrite the loop in the actual implementation below.
         }
 
         revalidatePath('/gastos-compartidos')

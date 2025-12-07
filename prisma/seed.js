@@ -4,18 +4,18 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('🌱 Seeding database...');
+    console.log('🌱 Poblando base de datos...');
 
     const adminUsername = 'admin';
     const adminPassword = '123456';
 
-    // 1. Check or Create Admin User
+    // 1. Verificar o Crear Usuario Admin
     let admin = await prisma.user.findUnique({
         where: { username: adminUsername }
     });
 
     if (!admin) {
-        console.log('👤 Admin user not found. Creating...');
+        console.log('👤 Usuario Admin no encontrado. Creando...');
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
         admin = await prisma.user.create({
@@ -24,7 +24,7 @@ async function main() {
                 name: 'Admin',
                 password: hashedPassword,
                 role: 'ADMIN',
-                // Create default config
+                // Crear configuración por defecto
                 configuracion: {
                     create: {
                         porcentajeAhorro: 20.0
@@ -32,13 +32,13 @@ async function main() {
                 }
             }
         });
-        console.log('✅ Admin user created.');
+        console.log('✅ Usuario Admin creado.');
     } else {
-        console.log('👤 Admin user already exists.');
+        console.log('👤 El usuario Admin ya existe.');
     }
 
-    // 2. Seed Categories
-    console.log('📂 Seeding categories...');
+    // 2. Poblar Categorías
+    console.log('📂 Poblando categorías...');
     const categories = [
         { nombre: 'Alimentación', color: '#ef4444', icono: 'Utensils' },
         { nombre: 'Transporte', color: '#f97316', icono: 'Car' },
@@ -52,7 +52,7 @@ async function main() {
     ];
 
     for (const cat of categories) {
-        // Check if category already exists for this user
+        // Verificar si la categoría ya existe para este usuario
         const existing = await prisma.categoria.findFirst({
             where: {
                 nombre: cat.nombre,
@@ -72,7 +72,7 @@ async function main() {
         }
     }
 
-    console.log('✅ Default categories seeded successfully.');
+    console.log('✅ Categorías por defecto pobladas exitosamente.');
 }
 
 main()

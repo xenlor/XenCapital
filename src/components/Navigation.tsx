@@ -46,7 +46,7 @@ interface NavigationProps {
 
 export default function Navigation({ userRole }: NavigationProps) {
     const pathname = usePathname()
-    // Initialize with ALL items visible to ensure first render measures them
+    // Inicializar con TODOS los ítems visibles para asegurar que el primer render los mida
     const [visibleItems, setVisibleItems] = useState<string[]>(navItems.map(i => i.href))
     const [overflowItems, setOverflowItems] = useState<string[]>([])
     const [showOverflow, setShowOverflow] = useState(false)
@@ -54,22 +54,22 @@ export default function Navigation({ userRole }: NavigationProps) {
     const itemRefs = useRef<Map<string, HTMLElement>>(new Map())
     const itemWidths = useRef<Map<string, number>>(new Map())
 
-    // Detect overflow items
+    // Detectar ítems desbordados
     useEffect(() => {
         const calculateOverflow = () => {
             if (!navRef.current) return
 
             const containerWidth = navRef.current.offsetWidth
-            // Buffer for the "More" button (approx width + margin + safety)
+            // Margen para el botón "Más" (ancho aprox + margen + seguridad)
             const moreButtonWidth = 120
             const safetyBuffer = 20
 
-            // First pass: Measure any items that are currently rendered and don't have a stored width
+            // Primera pasada: Medir ítems que están renderizados y no tienen ancho guardado
             navItems.forEach(item => {
                 const element = itemRefs.current.get(item.href)
                 if (element && !itemWidths.current.has(item.href)) {
-                    // Store the width including margin/padding
-                    // We use a slightly larger gap estimate to be safe
+                    // Guardar el ancho incluyendo margen/padding
+                    // Usamos una estimación de gap ligeramente mayor por seguridad
                     itemWidths.current.set(item.href, element.offsetWidth + 8)
                 }
             })
@@ -79,21 +79,21 @@ export default function Navigation({ userRole }: NavigationProps) {
             const overflow: string[] = []
             const allItemsWidth = navItems.reduce((sum, item) => sum + (itemWidths.current.get(item.href) || 0), 0)
 
-            // Check if EVERYTHING fits without the "More" button
-            // We subtract a safety buffer from the container width
+            // Comprobar si TODO cabe sin el botón "Más"
+            // Restamos un margen de seguridad del ancho del contenedor
             if (allItemsWidth <= (containerWidth - safetyBuffer)) {
                 setVisibleItems(navItems.map(i => i.href))
                 setOverflowItems([])
                 return
             }
 
-            // If not, we need the "More" button, so reduce available space
+            // Si no, necesitamos el botón "Más", así que reducimos el espacio disponible
             const availableWidth = containerWidth - moreButtonWidth - safetyBuffer
 
             let hasOverflowed = false
 
             navItems.forEach((item) => {
-                const width = itemWidths.current.get(item.href) || 120 // Fallback width if not measured yet
+                const width = itemWidths.current.get(item.href) || 120 // Ancho fallback si no se ha medido aún
 
                 if (!hasOverflowed && currentWidth + width <= availableWidth) {
                     visible.push(item.href)
@@ -108,10 +108,10 @@ export default function Navigation({ userRole }: NavigationProps) {
             setOverflowItems(overflow)
         }
 
-        // Initial measurement
+        // Medición inicial
         calculateOverflow()
 
-        // Re-calculate on resize
+        // Recalcular al redimensionar
         const observer = new ResizeObserver(calculateOverflow)
         if (navRef.current) {
             observer.observe(navRef.current)
