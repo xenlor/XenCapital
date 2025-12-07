@@ -59,7 +59,7 @@ export default function Navigation({ userRole }: NavigationProps) {
 
             const containerWidth = navRef.current.offsetWidth
             // Buffer for the "More" button (approx width + margin + safety)
-            const moreButtonWidth = 120
+            const moreButtonWidth = 60
             const safetyBuffer = 20
 
             // First pass: Measure any items that are currently rendered and don't have a stored width
@@ -202,10 +202,10 @@ export default function Navigation({ userRole }: NavigationProps) {
                                 <div className="relative ml-2 shrink-0">
                                     <button
                                         onClick={() => setShowOverflow(!showOverflow)}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-muted hover:text-foreground hover:bg-white/5 transition-all"
+                                        className="flex items-center justify-center w-10 h-10 rounded-xl text-muted hover:text-foreground hover:bg-white/5 transition-all"
+                                        aria-label="Más opciones"
                                     >
-                                        <Menu className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Más</span>
+                                        <Menu className="w-5 h-5" />
                                     </button>
 
                                     {showOverflow && (
