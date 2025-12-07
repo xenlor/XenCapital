@@ -44,30 +44,56 @@ interface NavigationProps {
 
 export default function Navigation({ userRole }: NavigationProps) {
     const pathname = usePathname()
-    const [visibleItems, setVisibleItems] = useState<string[]>([])
+    // Initialize with ALL items visible to ensure first render measures them
+    const [visibleItems, setVisibleItems] = useState<string[]>(navItems.map(i => i.href))
     const [overflowItems, setOverflowItems] = useState<string[]>([])
     const [showOverflow, setShowOverflow] = useState(false)
     const navRef = useRef<HTMLDivElement>(null)
     const itemRefs = useRef<Map<string, HTMLElement>>(new Map())
+    const itemWidths = useRef<Map<string, number>>(new Map())
 
     // Detect overflow items
     useEffect(() => {
-        const checkOverflow = () => {
+        const calculateOverflow = () => {
             if (!navRef.current) return
 
-            const navRect = navRef.current.getBoundingClientRect()
+            const containerWidth = navRef.current.offsetWidth
+            // Buffer for the "More" button (approx 90px) + safety padding
+            const moreButtonWidth = 100
+
+            // First pass: Measure any items that are currently rendered and don't have a stored width
+            navItems.forEach(item => {
+                const element = itemRefs.current.get(item.href)
+                if (element && !itemWidths.current.has(item.href)) {
+                    // Store the width including margin/padding
+                    itemWidths.current.set(item.href, element.offsetWidth + 8) // +8 for gap
+                }
+            })
+
+            // If we haven't measured all items yet, we might be in initial render or weird state.
+            // But we should try to calculate with what we have.
+
+            let currentWidth = 0
             const visible: string[] = []
             const overflow: string[] = []
+            const allItemsWidth = navItems.reduce((sum, item) => sum + (itemWidths.current.get(item.href) || 0), 0)
+
+            // Check if EVERYTHING fits without the "More" button
+            if (allItemsWidth <= containerWidth) {
+                setVisibleItems(navItems.map(i => i.href))
+                setOverflowItems([])
+                return
+            }
+
+            // If not, we need the "More" button, so reduce available space
+            const availableWidth = containerWidth - moreButtonWidth
 
             navItems.forEach((item) => {
-                const element = itemRefs.current.get(item.href)
-                if (!element) return
+                const width = itemWidths.current.get(item.href) || 120 // Fallback width if not measured yet
 
-                const rect = element.getBoundingClientRect()
-                const isFullyVisible = rect.right <= navRect.right - 50 // 50px buffer for actions
-
-                if (isFullyVisible) {
+                if (currentWidth + width <= availableWidth) {
                     visible.push(item.href)
+                    currentWidth += width
                 } else {
                     overflow.push(item.href)
                 }
@@ -77,9 +103,16 @@ export default function Navigation({ userRole }: NavigationProps) {
             setOverflowItems(overflow)
         }
 
-        checkOverflow()
-        window.addEventListener('resize', checkOverflow)
-        return () => window.removeEventListener('resize', checkOverflow)
+        // Initial measurement
+        calculateOverflow()
+
+        // Re-calculate on resize
+        const observer = new ResizeObserver(calculateOverflow)
+        if (navRef.current) {
+            observer.observe(navRef.current)
+        }
+
+        return () => observer.disconnect()
     }, [])
 
     const getItemByHref = (href: string) => navItems.find(item => item.href === href)
@@ -103,13 +136,14 @@ export default function Navigation({ userRole }: NavigationProps) {
                         </Link>
 
                         {/* Desktop Menu with overflow detection */}
-                        <div ref={navRef} className="flex-1 flex items-center min-w-0 mx-4">
-                            <div className="flex items-center gap-1">
+                        <div ref={navRef} className="flex-1 flex items-center min-w-0 mx-4 overflow-hidden">
+                            <div className="flex items-center gap-1 w-full">
                                 {navItems.map((item) => {
                                     const Icon = item.icon
                                     const isActive = pathname === item.href || ('submenu' in item && item.submenu?.some(sub => pathname === sub.href))
                                     const isVisible = visibleItems.includes(item.href)
 
+                                    // Always render to ref if visible, but if not visible we don't render in main bar
                                     if (!isVisible) return null
 
                                     if ('submenu' in item && item.submenu) {
