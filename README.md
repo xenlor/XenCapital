@@ -160,7 +160,7 @@ Este proyecto es software privado. Todos los derechos reservados.
 
 
 <details>
-<summary>📸 Galería de Imágenes (Clic para expandir)</summary>
+<summary><h2>📸 Galería de Imágenes (Clic para expandir)</h2></summary>
 
 | Dashboard | Inversiones |
 |---|---|
