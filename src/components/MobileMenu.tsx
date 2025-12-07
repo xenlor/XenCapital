@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
     LayoutDashboard,
@@ -176,8 +177,13 @@ export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuPr
                     {/* Footer Branding */}
                     <div className="p-6 border-t border-border">
                         <div className="flex items-center justify-center gap-2 opacity-50">
-                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                                <span className="text-white font-bold text-xs">€</span>
+                            <div className="relative w-6 h-6 rounded-lg overflow-hidden">
+                                <Image
+                                    src="/logo.png"
+                                    alt="XenCapital Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <span className="text-xs font-medium">XenCapital</span>
                         </div>

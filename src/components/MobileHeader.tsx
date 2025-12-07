@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Wallet, Shield, Settings, LogOut } from 'lucide-react'
+import Image from 'next/image'
+import { Shield, Settings, LogOut } from 'lucide-react'
 
 interface MobileHeaderProps {
     userName: string
@@ -17,8 +18,13 @@ export function MobileHeader({ userName, userRole }: MobileHeaderProps) {
                 <div className="flex items-center justify-between px-4 h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                            <Wallet className="w-5 h-5 text-white" />
+                        <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+                            <Image
+                                src="/logo.png"
+                                alt="XenCapital Logo"
+                                fill
+                                className="object-cover"
+                            />
                         </div>
                         <span className="font-bold text-foreground">XenCapital</span>
                     </Link>

@@ -1,6 +1,9 @@
 import Navigation from '@/components/Navigation'
 import { MobileHeader } from '@/components/MobileHeader'
+import { MobileBottomNav } from '@/components/MobileBottomNav'
+import { MobileMenu } from '@/components/MobileMenu'
 import { getCurrentUser } from '@/lib/auth'
+import { ClientLayout } from './ClientLayout'
 
 export default async function DashboardLayout({
     children,
@@ -10,20 +13,8 @@ export default async function DashboardLayout({
     const user = await getCurrentUser()
 
     return (
-        <>
-            {/* Desktop Navigation - hidden on mobile */}
-            <div className="hidden md:block">
-                <Navigation userRole={user.role} />
-            </div>
-
-            {/* Mobile Header - only shows on mobile */}
-            <MobileHeader userName={user.name || user.username} userRole={user.role} />
-
-            <main className="min-h-screen pt-8 px-4 pb-32 md:pt-32 md:pb-12">
-                <div className="max-w-7xl mx-auto">
-                    {children}
-                </div>
-            </main>
-        </>
+        <ClientLayout user={user}>
+            {children}
+        </ClientLayout>
     )
 }

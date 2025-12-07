@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
     LayoutDashboard,
@@ -126,8 +127,13 @@ export default function Navigation({ userRole }: NavigationProps) {
                     <div className="flex items-center justify-between h-20">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-3 group shrink-0">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
-                                <Wallet className="w-6 h-6 text-white" />
+                            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                <Image
+                                    src="/logo.png"
+                                    alt="XenCapital Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <div className="flex flex-col shrink-0">
                                 <span className="font-bold text-lg tracking-tight text-foreground whitespace-nowrap">XenCapital</span>

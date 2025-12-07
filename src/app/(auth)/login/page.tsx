@@ -3,7 +3,8 @@
 import { authenticate } from '@/app/actions/auth';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Wallet, Mail, Lock, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
     return (
@@ -19,8 +20,14 @@ export default function LoginPage() {
                 <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
                     {/* Header */}
                     <div className="p-8 pb-0 text-center">
-                        <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 mb-6 group">
-                            <Wallet className="w-8 h-8 text-white group-hover:scale-110 transition-transform duration-300" />
+                        <div className="relative w-16 h-16 mb-6 rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 group-hover:scale-105 transition-transform duration-300 mx-auto">
+                            <Image
+                                src="/logo.png"
+                                alt="XenCapital Logo"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
                         </div>
                         <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">
                             XenCapital
