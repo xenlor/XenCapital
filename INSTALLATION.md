@@ -60,7 +60,7 @@ nano .env
 DATABASE_URL="postgresql://xen_user:tu_password_segura@localhost:5432/xencapital"
 AUTH_SECRET="escribe_aqui_algo_muy_largo_y_aleatorio"
 NEXTAUTH_URL="http://localhost:3000"
-NODE_ENV="development"
+
 ```
 
 ### Paso 3: Inicializar Base de Datos
@@ -93,7 +93,7 @@ npm run build
 Si no tienes PM2: `sudo npm install -g pm2`
 
 ```bash
-# Cambia NODE_ENV a production en tu .env antes de esto
+
 pm2 start npm --name "xencapital" -- start
 ```
 
