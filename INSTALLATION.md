@@ -70,13 +70,20 @@ Este comando crea las tablas en tu base de datos vacía.
 npx prisma db push
 ```
 
-### Paso 4: Iniciar Servidor
+### Paso 5: Crear Usuario Administrador
+El registro público está desactivado por seguridad. Usa este script para crear tu primer usuario:
+
+```bash
+# Uso: node scripts/crear-usuario.js <usuario> <password> <nombre> [rol]
+node scripts/crear-usuario.js admin micontraseñasegura "Administrador" ADMIN
+```
+
+### Paso 6: Iniciar Servidor
 ```bash
 npm run dev
 ```
 La aplicación estará disponible en **http://localhost:3000**.
-
-> **Nota:** El primer usuario que crees manualmente (o vía script) deberá asignarse el rol `ADMIN` en la base de datos si quieres acceder al panel de administración.
+Inicia sesión con el usuario `admin` que acabas de crear.
 
 ---
 
