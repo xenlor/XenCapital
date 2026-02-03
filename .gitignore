@@ -71,4 +71,6 @@ next-env.d.ts
 # Otros archivos generados o temporales
 deploy.zip
 *.backup
-_secure_backup/
+
+# Caddy
+Caddyfile
