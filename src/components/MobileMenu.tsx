@@ -18,6 +18,9 @@ import {
     LogOut
 } from 'lucide-react'
 import { logout } from '@/app/actions/auth'
+import { useTheme } from './ThemeProvider'
+import { GlobalAddButton } from './GlobalAddButton'
+import { CommandPalette } from './CommandPalette'
 
 interface MobileMenuProps {
     isOpen: boolean
@@ -28,6 +31,7 @@ interface MobileMenuProps {
 
 export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuProps) {
     const pathname = usePathname()
+    const { theme } = useTheme()
 
     // Cerrar con tecla escape
     useEffect(() => {
@@ -75,7 +79,7 @@ export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuPr
                 <div className="flex flex-col h-full">
                     {/* Header Profile */}
                     <div className="p-6 border-b border-border bg-muted/10">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20">
                                 {userName?.charAt(0).toUpperCase()}
                             </div>
@@ -83,6 +87,13 @@ export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuPr
                                 <h3 className="font-bold text-lg truncate">{userName}</h3>
                                 <p className="text-xs text-muted-foreground capitalize">{userRole?.toLowerCase()}</p>
                             </div>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="flex items-center gap-2">
+                            <GlobalAddButton />
+                            <div className="flex-1" />
+                            <CommandPalette />
                         </div>
                     </div>
 
@@ -114,7 +125,7 @@ export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuPr
                         </div>
 
                         {/* Admin Section */}
-                        {userRole === 'ADMIN' && (
+                        {userRole?.toUpperCase() === 'ADMIN' && (
                             <div>
                                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">Administración</h4>
                                 <div className="space-y-1">
@@ -180,7 +191,7 @@ export function MobileMenu({ isOpen, onClose, userName, userRole }: MobileMenuPr
                         <div className="flex items-center justify-center gap-2 opacity-50">
                             <div className="relative w-6 h-6 rounded-lg overflow-hidden">
                                 <Image
-                                    src="/logo.png"
+                                    src={theme === 'light' ? '/logo-light.png' : '/logo.png'}
                                     alt="XenCapital Logo"
                                     fill
                                     className="object-cover"

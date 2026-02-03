@@ -4,18 +4,38 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import bcrypt from 'bcryptjs'
+import { z } from 'zod'
+import { checkRateLimit } from '@/lib/security'
 
-// Middleware-like check for admin role
+// Schema de validación para crear usuarios
+const CreateUserSchema = z.object({
+    name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(50),
+    username: z.string()
+        .min(3, 'El usuario debe tener al menos 3 caracteres')
+        .max(30)
+        .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guiones bajos'),
+    password: z.string()
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .regex(/[a-zA-Z]/, 'Debe contener al menos una letra')
+        .regex(/[0-9]/, 'Debe contener al menos un número'),
+    role: z.enum(['USER', 'ADMIN']).default('USER')
+})
+
+// Middleware-like check for admin role (case-insensitive)
 async function requireAdmin() {
     const user = await getCurrentUser()
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || user.role?.toUpperCase() !== 'ADMIN') {
         throw new Error('Unauthorized: Admin access required')
     }
     return user
 }
 
 export async function getUsers() {
-    await requireAdmin()
+    const admin = await requireAdmin()
+
+    if (!checkRateLimit(admin.id)) {
+        return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+    }
 
     try {
         const users = await prisma.user.findMany({
@@ -44,6 +64,10 @@ export async function getUsers() {
 export async function deleteUser(userId: string) {
     const admin = await requireAdmin()
 
+    if (!checkRateLimit(admin.id)) {
+        return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+    }
+
     if (userId === admin.id) {
         return { success: false, error: 'Cannot delete your own admin account' }
     }
@@ -60,15 +84,29 @@ export async function deleteUser(userId: string) {
     }
 }
 
-export async function createUser(data: any) {
-    await requireAdmin()
+export async function createUser(data: unknown) {
+    const admin = await requireAdmin()
+
+    if (!checkRateLimit(admin.id)) {
+        return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+    }
+
+    // Validar entrada con Zod
+    const validationResult = CreateUserSchema.safeParse(data)
+    if (!validationResult.success) {
+        const errors = validationResult.error.flatten().fieldErrors
+        const firstError = Object.values(errors)[0]?.[0] || 'Datos inválidos'
+        return { success: false, error: firstError }
+    }
+
+    const validatedData = validationResult.data
 
     try {
-        const hashedPassword = await bcrypt.hash(data.password, 10)
+        const hashedPassword = await bcrypt.hash(validatedData.password, 10)
 
         // Check if username exists
         const existingUser = await prisma.user.findUnique({
-            where: { username: data.username }
+            where: { username: validatedData.username }
         })
 
         if (existingUser) {
@@ -77,10 +115,10 @@ export async function createUser(data: any) {
 
         await prisma.user.create({
             data: {
-                name: data.name,
-                username: data.username,
+                name: validatedData.name,
+                username: validatedData.username,
                 password: hashedPassword,
-                role: data.role || 'USER',
+                role: validatedData.role,
                 configuracion: {
                     create: {
                         porcentajeAhorro: 20.0
@@ -112,7 +150,11 @@ export async function createUser(data: any) {
 }
 
 export async function resetPassword(userId: string, newPassword: string) {
-    await requireAdmin()
+    const admin = await requireAdmin()
+
+    if (!checkRateLimit(admin.id)) {
+        return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+    }
 
     try {
         const hashedPassword = await bcrypt.hash(newPassword, 10)

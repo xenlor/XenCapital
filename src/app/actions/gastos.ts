@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUser } from '@/lib/auth'
+import { validateMonto, validateId, sanitizeDescription, checkRateLimit } from '@/lib/security'
 
 export async function getGastos(month?: number, year?: number, categoryIds?: number[]) {
     const user = await getCurrentUser()
@@ -36,32 +37,70 @@ export async function getGastos(month?: number, year?: number, categoryIds?: num
 }
 
 export async function getCategorias() {
-    const user = await getCurrentUser()
-    return await prisma.categoria.findMany({
-        where: { userId: user.id },
-        orderBy: {
-            nombre: 'asc',
-        },
-    })
+    try {
+        const user = await getCurrentUser()
+        console.log('ServerAction: getCategorias for user:', user.id)
+        const categories = await prisma.categoria.findMany({
+            where: {
+                OR: [
+                    { userId: user.id },
+                    { userId: null }
+                ]
+            },
+            orderBy: {
+                nombre: 'asc',
+            },
+        })
+        console.log('ServerAction: getCategorias found:', categories.length)
+        return categories
+    } catch (error) {
+        console.error('ServerAction: Error in getCategorias:', error)
+        throw error
+    }
 }
 
 export async function addGasto(formData: FormData) {
     const user = await getCurrentUser()
-    const monto = parseFloat(formData.get('monto') as string)
-    const descripcion = formData.get('descripcion') as string
-    const categoriaId = parseInt(formData.get('categoriaId') as string)
-    const fecha = new Date(formData.get('fecha') as string)
 
-    if (!monto || !descripcion || !categoriaId || !fecha) {
-        return { success: false, error: 'Faltan campos requeridos' }
+    // Rate limiting
+    if (!checkRateLimit(user.id)) {
+        return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+    }
+
+    // Validar monto
+    const montoRaw = formData.get('monto') as string
+    const montoValidation = validateMonto(montoRaw)
+    if (!montoValidation.valid) {
+        return { success: false, error: montoValidation.error }
+    }
+
+    // Sanitizar descripción
+    const descripcionRaw = formData.get('descripcion') as string
+    const descripcion = sanitizeDescription(descripcionRaw)
+    if (!descripcion) {
+        return { success: false, error: 'La descripción es requerida' }
+    }
+
+    // Validar categoría
+    const categoriaIdRaw = parseInt(formData.get('categoriaId') as string)
+    const categoriaValidation = validateId(categoriaIdRaw)
+    if (!categoriaValidation.valid) {
+        return { success: false, error: 'Categoría inválida' }
+    }
+
+    // Validar fecha
+    const fechaRaw = formData.get('fecha') as string
+    const fecha = new Date(fechaRaw)
+    if (isNaN(fecha.getTime())) {
+        return { success: false, error: 'Fecha inválida' }
     }
 
     try {
         await prisma.gasto.create({
             data: {
-                monto,
+                monto: montoValidation.value,
                 descripcion,
-                categoriaId,
+                categoriaId: categoriaValidation.value,
                 fecha,
                 userId: user.id,
             },
@@ -70,16 +109,24 @@ export async function addGasto(formData: FormData) {
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error creating gasto:', error)
         return { success: false, error: 'Error al crear el gasto' }
     }
 }
 
 export async function deleteGasto(id: number) {
+    // Validar ID
+    const idValidation = validateId(id)
+    if (!idValidation.valid) {
+        return { success: false, error: idValidation.error }
+    }
+
     try {
-        // Comprobar si este gasto está vinculado a un gasto compartido
         const user = await getCurrentUser()
-        // Comprobar si este gasto está vinculado y pertenece al usuario
+
+        // Rate limiting
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
         const gasto = await prisma.gasto.findFirst({
             where: {
                 id,
@@ -137,5 +184,78 @@ export async function addCategoria(formData: FormData) {
     } catch (error) {
         console.error('Error creating categoria:', error)
         return { success: false, error: 'Error al crear la categoría' }
+    }
+}
+
+export async function updateGasto(id: number, formData: FormData) {
+    // Validar ID
+    const idValidation = validateId(id)
+    if (!idValidation.valid) {
+        return { success: false, error: idValidation.error }
+    }
+
+    try {
+        const user = await getCurrentUser()
+
+        // Rate limiting
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
+        // Verificar propiedad
+        const existingGasto = await prisma.gasto.findUnique({
+            where: { id: idValidation.value }
+        })
+
+        if (!existingGasto || existingGasto.userId !== user.id) {
+            return { success: false, error: 'Gasto no encontrado o no tienes permisos' }
+        }
+
+        // Validar monto
+        const montoRaw = formData.get('monto') as string
+        const montoValidation = validateMonto(montoRaw)
+        if (!montoValidation.valid) {
+            return { success: false, error: montoValidation.error }
+        }
+
+        // Sanitizar descripción
+        const descripcionRaw = formData.get('descripcion') as string
+        const descripcion = sanitizeDescription(descripcionRaw)
+        if (!descripcion) {
+            return { success: false, error: 'La descripción es requerida' }
+        }
+
+        // Validar categoría
+        const categoriaIdRaw = parseInt(formData.get('categoriaId') as string)
+        const categoriaValidation = validateId(categoriaIdRaw)
+        if (!categoriaValidation.valid) {
+            return { success: false, error: 'Categoría inválida' }
+        }
+
+        // Validar fecha
+        const fechaRaw = formData.get('fecha') as string
+        const fecha = new Date(fechaRaw)
+        if (isNaN(fecha.getTime())) {
+            return { success: false, error: 'Fecha inválida' }
+        }
+
+        // Si cambia el monto y es compartido, esto podría requerir lógica compleja adicional
+        // Por ahora, actualización simple
+
+        await prisma.gasto.update({
+            where: { id: idValidation.value },
+            data: {
+                monto: montoValidation.value,
+                descripcion,
+                categoriaId: categoriaValidation.value,
+                fecha,
+            },
+        })
+
+        revalidatePath('/gastos')
+        revalidatePath('/')
+        return { success: true }
+    } catch (error) {
+        return { success: false, error: 'Error al actualizar el gasto' }
     }
 }

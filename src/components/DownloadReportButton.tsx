@@ -1,7 +1,7 @@
 'use client'
 
 import { Download } from 'lucide-react'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 interface DownloadReportButtonProps {
     ingresos: any[]
@@ -11,7 +11,7 @@ interface DownloadReportButtonProps {
 }
 
 export function DownloadReportButton({ ingresos, gastos, month, year }: DownloadReportButtonProps) {
-    const handleDownload = () => {
+    const handleDownload = async () => {
         // Combine data
         const allTransactions = [
             ...ingresos.map(i => ({
@@ -30,18 +30,57 @@ export function DownloadReportButton({ ingresos, gastos, month, year }: Download
             }))
         ].sort((a, b) => b.Fecha.getTime() - a.Fecha.getTime())
 
-        // Create worksheet
-        const ws = XLSX.utils.json_to_sheet(allTransactions.map(t => ({
-            ...t,
-            Fecha: t.Fecha.toLocaleDateString()
-        })))
+        // Create workbook and worksheet
+        const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('Reporte Financiero')
 
-        // Create workbook
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, "Reporte Financiero")
+        // Define columns
+        worksheet.columns = [
+            { header: 'Fecha', key: 'Fecha', width: 15 },
+            { header: 'Tipo', key: 'Tipo', width: 12 },
+            { header: 'Descripción', key: 'Descripción', width: 30 },
+            { header: 'Categoría', key: 'Categoría', width: 20 },
+            { header: 'Monto', key: 'Monto', width: 15 }
+        ]
 
-        // Generate Excel file
-        XLSX.writeFile(wb, `reporte_financiero_${month + 1}_${year}.xlsx`)
+        // Style header row
+        worksheet.getRow(1).font = { bold: true }
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF1F2937' }
+        }
+        worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }
+
+        // Add data rows
+        allTransactions.forEach(t => {
+            const row = worksheet.addRow({
+                Fecha: t.Fecha.toLocaleDateString(),
+                Tipo: t.Tipo,
+                Descripción: t.Descripción,
+                Categoría: t.Categoría,
+                Monto: t.Monto
+            })
+
+            // Color code: green for income, red for expenses
+            const montoCell = row.getCell('Monto')
+            montoCell.numFmt = '€#,##0.00'
+            if (t.Monto >= 0) {
+                montoCell.font = { color: { argb: 'FF10B981' } }
+            } else {
+                montoCell.font = { color: { argb: 'FFEF4444' } }
+            }
+        })
+
+        // Generate Excel file and trigger download
+        const buffer = await workbook.xlsx.writeBuffer()
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `reporte_financiero_${month + 1}_${year}.xlsx`
+        link.click()
+        window.URL.revokeObjectURL(url)
     }
 
     return (

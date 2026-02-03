@@ -1,9 +1,8 @@
-import { getIngresos, addIngreso, deleteIngreso } from '@/app/actions/ingresos'
-import { Plus, Trash2, TrendingUp, Calendar, DollarSign, FileText } from 'lucide-react'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { getIngresos, addIngreso } from '@/app/actions/ingresos'
+import { Plus, TrendingUp, DollarSign, FileText, Calendar } from 'lucide-react'
 import { MonthSelector } from '@/components/ui/MonthSelector'
 import { getAvailableMonths } from '@/app/actions/general'
+import { IngresosList } from '@/components/IngresosList'
 
 export default async function IngresosPage({
     searchParams,
@@ -24,11 +23,6 @@ export default async function IngresosPage({
     async function handleAddIngreso(formData: FormData) {
         'use server'
         await addIngreso(formData)
-    }
-
-    async function handleDeleteIngreso(id: number) {
-        'use server'
-        await deleteIngreso(id)
     }
 
     return (
@@ -134,58 +128,7 @@ export default async function IngresosPage({
 
                 {/* List Section */}
                 <div className="lg:col-span-2">
-                    <div className="glass-panel p-6 rounded-2xl min-h-[500px]">
-                        <h2 className="text-xl font-bold text-foreground mb-6">Historial de Transacciones</h2>
-
-                        {ingresos.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-[300px] text-center">
-                                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 animate-pulse-slow">
-                                    <TrendingUp className="w-10 h-10 text-muted/50" />
-                                </div>
-                                <h3 className="text-lg font-medium text-foreground mb-2">Sin ingresos registrados</h3>
-                                <p className="text-muted max-w-xs">
-                                    Tus ingresos aparecerán aquí. Comienza añadiendo uno desde el formulario.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {ingresos.map((ingreso) => (
-                                    <div
-                                        key={ingreso.id}
-                                        className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 gap-4"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-success/20 to-emerald-500/10 flex items-center justify-center text-success border border-success/10 group-hover:border-success/30 transition-colors shrink-0">
-                                                <DollarSign className="w-6 h-6" />
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-foreground text-lg">{ingreso.descripcion}</p>
-                                                <div className="flex items-center gap-2 text-sm text-muted">
-                                                    <Calendar className="w-3 h-3" />
-                                                    {format(new Date(ingreso.fecha), "d 'de' MMMM, yyyy", { locale: es })}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pl-[4rem] sm:pl-0">
-                                            <p className="text-xl font-bold text-success tracking-tight">
-                                                +€{ingreso.monto.toFixed(2)}
-                                            </p>
-                                            <form action={handleDeleteIngreso.bind(null, ingreso.id)}>
-                                                <button
-                                                    type="submit"
-                                                    className="p-2.5 rounded-lg text-muted hover:text-danger hover:bg-danger/10 transition-all duration-200 opacity-100 sm:opacity-0 group-hover:opacity-100"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <IngresosList initialIngresos={ingresos} />
                 </div>
             </div>
         </div>

@@ -1,7 +1,3 @@
-import Navigation from '@/components/Navigation'
-import { MobileHeader } from '@/components/MobileHeader'
-import { MobileBottomNav } from '@/components/MobileBottomNav'
-import { MobileMenu } from '@/components/MobileMenu'
 import { getCurrentUser } from '@/lib/auth'
 import { ClientLayout } from './ClientLayout'
 

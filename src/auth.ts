@@ -33,7 +33,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     const passwordsMatch = await bcrypt.compare(password, user.password);
 
                     if (passwordsMatch) {
-                        console.log('Authorize - User found:', user.username, 'Role:', user.role)
+                        // Log solo en desarrollo
+                        if (process.env.NODE_ENV === 'development') {
+                            console.log('Authorize - User found:', user.username)
+                        }
                         return user;
                     }
                 }
@@ -46,7 +49,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                console.log('JWT Callback - User:', user.role)
+                // No loguear información sensible
                 token.id = user.id;
                 token.role = user.role;
                 token.username = user.username;
@@ -68,6 +71,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     session.user.id = user.id;
                     session.user.role = user.role;
                     session.user.username = user.username;
+                    session.user.name = user.name;
                 } catch (error) {
                     console.error('Failed to fetch user in session callback:', error);
                 }

@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUser } from '@/lib/auth'
+import { validateMonto, validateId, sanitizeDescription, checkRateLimit } from '@/lib/security'
 
 export async function getIngresos(month?: number, year?: number) {
     try {
@@ -33,17 +34,31 @@ export async function getIngresos(month?: number, year?: number) {
 export async function addIngreso(formData: FormData) {
     try {
         const user = await getCurrentUser()
-        const monto = parseFloat(formData.get('monto') as string)
-        const descripcion = formData.get('descripcion') as string
-        const fecha = formData.get('fecha') as string
 
-        if (!monto || !descripcion) {
-            throw new Error('Monto y descripción son requeridos')
+        // Rate limiting
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
         }
+
+        // Validar monto
+        const montoRaw = formData.get('monto') as string
+        const montoValidation = validateMonto(montoRaw)
+        if (!montoValidation.valid) {
+            return { success: false, error: montoValidation.error }
+        }
+
+        // Sanitizar descripción
+        const descripcionRaw = formData.get('descripcion') as string
+        const descripcion = sanitizeDescription(descripcionRaw)
+        if (!descripcion) {
+            return { success: false, error: 'La descripción es requerida' }
+        }
+
+        const fecha = formData.get('fecha') as string
 
         await prisma.ingreso.create({
             data: {
-                monto,
+                monto: montoValidation.value,
                 descripcion,
                 fecha: fecha ? new Date(fecha) : new Date(),
                 userId: user.id,
@@ -54,31 +69,41 @@ export async function addIngreso(formData: FormData) {
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error adding ingreso:', error)
         return { success: false, error: 'Error al agregar ingreso' }
     }
 }
 
 export async function deleteIngreso(id: number) {
+    // Validar ID
+    const idValidation = validateId(id)
+    if (!idValidation.valid) {
+        return { success: false, error: idValidation.error }
+    }
+
     try {
         const user = await getCurrentUser()
+
+        // Rate limiting
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
         const result = await prisma.ingreso.deleteMany({
             where: {
-                id,
+                id: idValidation.value,
                 userId: user.id
             },
         })
 
         if (result.count === 0) {
-            return { success: false, error: 'Ingreso no encontrado o no tienes permisos' }
+            return { success: false, error: 'Registro no encontrado' }
         }
 
         revalidatePath('/ingresos')
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error deleting ingreso:', error)
-        return { success: false, error: 'Error al eliminar ingreso' }
+        return { success: false, error: 'Error al eliminar' }
     }
 }
 
@@ -103,5 +128,66 @@ export async function getTotalIngresos() {
     } catch (error) {
         console.error('Error calculating total ingresos:', error)
         return 0
+    }
+}
+
+export async function updateIngreso(id: number, formData: FormData) {
+    // Validar ID
+    const idValidation = validateId(id)
+    if (!idValidation.valid) {
+        return { success: false, error: idValidation.error }
+    }
+
+    try {
+        const user = await getCurrentUser()
+
+        // Rate limiting
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
+        // Verificar propiedad
+        const existingIngreso = await prisma.ingreso.findUnique({
+            where: { id: idValidation.value }
+        })
+
+        if (!existingIngreso || existingIngreso.userId !== user.id) {
+            return { success: false, error: 'Ingreso no encontrado o no tienes permisos' }
+        }
+
+        // Validar monto
+        const montoRaw = formData.get('monto') as string
+        const montoValidation = validateMonto(montoRaw)
+        if (!montoValidation.valid) {
+            return { success: false, error: montoValidation.error }
+        }
+
+        // Sanitizar descripción
+        const descripcionRaw = formData.get('descripcion') as string
+        const descripcion = sanitizeDescription(descripcionRaw)
+        if (!descripcion) {
+            return { success: false, error: 'La descripción es requerida' }
+        }
+
+        const fechaRaw = formData.get('fecha') as string
+        const fecha = fechaRaw ? new Date(fechaRaw) : new Date()
+        if (isNaN(fecha.getTime())) {
+            return { success: false, error: 'Fecha inválida' }
+        }
+
+        await prisma.ingreso.update({
+            where: { id: idValidation.value },
+            data: {
+                monto: montoValidation.value,
+                descripcion,
+                fecha,
+            },
+        })
+
+        revalidatePath('/ingresos')
+        revalidatePath('/')
+        return { success: true }
+    } catch (error) {
+        return { success: false, error: 'Error al actualizar el ingreso' }
     }
 }

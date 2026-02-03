@@ -22,7 +22,7 @@ export default function LoginPage() {
                     <div className="p-8 pb-0 text-center">
                         <div className="relative w-16 h-16 mb-6 rounded-2xl overflow-hidden shadow-2xl shadow-primary/30 group-hover:scale-105 transition-transform duration-300 mx-auto">
                             <Image
-                                src="/logo.png"
+                                src="/logo-dark.png"
                                 alt="XenCapital Logo"
                                 fill
                                 className="object-cover"

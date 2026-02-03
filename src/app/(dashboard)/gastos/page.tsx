@@ -1,11 +1,8 @@
-import { getGastos, addGasto, deleteGasto, getCategorias, addCategoria } from '@/app/actions/gastos'
-import { Trash2, TrendingDown, Plus, Calendar, DollarSign, FileText, Tag, Filter } from 'lucide-react'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { Input } from '@/components/ui/Input'
-import { SubmitButton } from '@/components/ui/SubmitButton'
+import { getGastos, addGasto, getCategorias } from '@/app/actions/gastos'
+import { TrendingDown, Plus, Calendar, DollarSign, FileText, Tag } from 'lucide-react'
 import { NewCategoryForm } from '@/components/NewCategoryForm'
 import { MonthSelector } from '@/components/ui/MonthSelector'
+import { GastosList } from '@/components/GastosList'
 import { getAvailableMonths } from '@/app/actions/general'
 import { CategoryFilter } from '@/components/CategoryFilter'
 
@@ -34,11 +31,6 @@ export default async function GastosPage({
     async function handleAddGasto(formData: FormData) {
         'use server'
         await addGasto(formData)
-    }
-
-    async function handleDeleteGasto(id: number) {
-        'use server'
-        await deleteGasto(id)
     }
 
     return (
@@ -174,69 +166,7 @@ export default async function GastosPage({
 
                 {/* List Section */}
                 <div className="lg:col-span-2">
-                    <div className="glass-panel p-6 rounded-2xl min-h-[500px]">
-                        <h2 className="text-xl font-bold text-foreground mb-6">Historial de Gastos</h2>
-
-                        {gastos.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-[300px] text-center">
-                                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 animate-pulse-slow">
-                                    <TrendingDown className="w-10 h-10 text-muted/50" />
-                                </div>
-                                <h3 className="text-lg font-medium text-white mb-2">Sin gastos registrados</h3>
-                                <p className="text-muted max-w-xs">
-                                    Tus gastos aparecerán aquí. Comienza añadiendo uno desde el formulario.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {gastos.map((gasto) => (
-                                    <div
-                                        key={gasto.id}
-                                        className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 gap-4"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div
-                                                className="w-12 h-12 rounded-xl flex items-center justify-center text-white border border-white/10 shadow-sm shrink-0"
-                                                style={{ backgroundColor: `${gasto.categoria.color}20`, color: gasto.categoria.color, borderColor: `${gasto.categoria.color}40` }}
-                                            >
-                                                <Tag className="w-6 h-6" />
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-foreground text-lg">{gasto.descripcion}</p>
-                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-muted">
-                                                    <span
-                                                        className="px-2 py-0.5 rounded-md text-xs font-medium bg-white/5 border border-white/10"
-                                                        style={{ color: gasto.categoria.color }}
-                                                    >
-                                                        {gasto.categoria.nombre}
-                                                    </span>
-                                                    <div className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        {format(new Date(gasto.fecha), "d 'de' MMMM, yyyy", { locale: es })}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pl-[4rem] sm:pl-0">
-                                            <p className="text-xl font-bold text-danger tracking-tight">
-                                                -€{gasto.monto.toFixed(2)}
-                                            </p>
-                                            <form action={handleDeleteGasto.bind(null, gasto.id)}>
-                                                <button
-                                                    type="submit"
-                                                    className="p-2.5 rounded-lg text-muted hover:text-danger hover:bg-danger/10 transition-all duration-200 opacity-100 sm:opacity-0 group-hover:opacity-100"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <GastosList initialGastos={gastos} categories={categorias} />
                 </div>
             </div>
         </div>

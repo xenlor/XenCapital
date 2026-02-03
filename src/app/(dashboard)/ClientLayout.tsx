@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Navigation from '@/components/Navigation'
-import { MobileHeader } from '@/components/MobileHeader'
+
 import { MobileBottomNav } from '@/components/MobileBottomNav'
 import { MobileMenu } from '@/components/MobileMenu'
 
@@ -18,7 +18,7 @@ export function ClientLayout({ children, user }: ClientLayoutProps) {
         <>
             {/* Desktop Navigation - hidden on mobile */}
             <div className="hidden md:block">
-                <Navigation userRole={user.role} />
+                <Navigation user={user} />
             </div>
 
             {/* Mobile Header - removed as per request */}

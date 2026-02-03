@@ -46,7 +46,7 @@ export function ExpensesDonutChart({ data }: ExpensesDonutChartProps) {
                         color: '#fff'
                     }}
                     itemStyle={{ color: '#fff' }}
-                    formatter={(value: number) => `€${value.toFixed(2)}`}
+                    formatter={(value) => `€${(value as number).toFixed(2)}`}
                 />
                 <Legend
                     verticalAlign="bottom"

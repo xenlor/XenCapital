@@ -1,4 +1,4 @@
-# dependencies
+# Dependencias
 /node_modules
 /.pnp
 .pnp.*
@@ -8,55 +8,67 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Next.js
 /.next/
 /out/
-
-# production
 /build
 
-# misc
-.DS_Store
-*.pem
+# Entorno y Secretos (CRÍTICO)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Excepción: ¡SÍ subir el ejemplo!
+!.env.example
 
-# debug
+# Logs y Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 *.log
-debug_output*.txt
-test_output.txt
-page_test_output.txt
+*.log.*
 
-# env files
-.env*
+# Testing
+/coverage
+*.lcov
+.nyc_output
 
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-
-# database
+# Base de Datos (Archivos locales de SQLite si se usaran)
 *.db
 *.sqlite
 *.sqlite3
 *.sqlite-journal
 
-# deployment
-deploy.zip
-_secure_backup/
+# IDEs y Editores
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
 
-# Local Deployment Scripts
-scripts/*.ps1
-# Sensitive Documentation
-docs/ENV_REFERENCE.txt
-control-gastos-update.zip
-scripts/fix-admin.js
-scripts/seed-fake-data.js
-docs/AUTOMATED_DEPLOYMENT.md
+# Sistema Operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
+
+# Otros archivos generados o temporales
+deploy.zip
+*.backup
+_secure_backup/

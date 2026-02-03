@@ -44,37 +44,11 @@ export async function authenticate(
 }
 
 export async function register(prevState: any, formData: FormData) {
-    const validatedFields = SignupFormSchema.safeParse({
-        name: formData.get('name'),
-        username: formData.get('username'),
-        password: formData.get('password'),
-    });
-
-    if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Missing Fields. Failed to Register.',
-        };
-    }
-
-    const { name, username, password } = validatedFields.data;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    try {
-        await prisma.user.create({
-            data: {
-                name,
-                username,
-                password: hashedPassword,
-            },
-        });
-    } catch (error) {
-        return {
-            message: 'Database Error: Failed to Create User.',
-        };
-    }
-
-    redirect('/login');
+    // SEGURIDAD: Registro público deshabilitado
+    // Los usuarios solo pueden ser creados por un administrador desde /admin/users
+    return {
+        message: 'El registro público está deshabilitado. Contacta al administrador.',
+    };
 }
 
 export async function logout() {

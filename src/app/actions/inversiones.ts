@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUser } from '@/lib/auth'
+import { validateMonto, validateId, sanitizeDescription, checkRateLimit } from '@/lib/security'
 
 export async function getInversiones(month?: number, year?: number) {
     try {
@@ -33,24 +34,36 @@ export async function getInversiones(month?: number, year?: number) {
 export async function addInversion(formData: FormData) {
     try {
         const user = await getCurrentUser()
-        const tipo = formData.get('tipo') as string
-        const nombre = formData.get('nombre') as string
-        const monto = parseFloat(formData.get('monto') as string)
-        const notas = formData.get('notas') as string || null
+
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
+        const tipo = sanitizeDescription(formData.get('tipo') as string, 50)
+        const nombre = sanitizeDescription(formData.get('nombre') as string, 100)
+        const notas = formData.get('notas') as string
+        const notasSanitized = notas ? sanitizeDescription(notas, 500) : null
+
+        const montoRaw = formData.get('monto') as string
+        const montoValidation = validateMonto(montoRaw)
+        if (!montoValidation.valid) {
+            return { success: false, error: montoValidation.error }
+        }
+
+        if (!tipo || !nombre) {
+            return { success: false, error: 'Tipo y nombre son requeridos' }
+        }
+
         const fechaStr = formData.get('fecha') as string
         const fecha = fechaStr ? new Date(fechaStr) : new Date()
-
-        if (!tipo || !nombre || isNaN(monto)) {
-            return { success: false, error: 'Todos los campos son requeridos' }
-        }
 
         await prisma.inversion.create({
             data: {
                 tipo,
                 nombre,
-                monto,
+                monto: montoValidation.value,
                 fecha,
-                notas,
+                notas: notasSanitized,
                 userId: user.id,
             },
         })
@@ -59,23 +72,31 @@ export async function addInversion(formData: FormData) {
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error adding inversion:', error)
         return { success: false, error: 'Error al añadir inversión' }
     }
 }
 
 export async function deleteInversion(id: number) {
+    const idValidation = validateId(id)
+    if (!idValidation.valid) {
+        return { success: false, error: idValidation.error }
+    }
+
     try {
         const user = await getCurrentUser()
+
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
         await prisma.inversion.deleteMany({
-            where: { id, userId: user.id }
+            where: { id: idValidation.value, userId: user.id }
         })
 
         revalidatePath('/inversiones')
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error deleting inversion:', error)
         return { success: false, error: 'Error al eliminar inversión' }
     }
 }

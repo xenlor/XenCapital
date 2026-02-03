@@ -20,7 +20,7 @@ import { MonthSelector } from '@/components/ui/MonthSelector'
 import { getAvailableMonths } from '@/app/actions/general'
 import { getSavingsAnalysis } from '@/app/actions/ahorros'
 import { DownloadReportButton } from '@/components/DownloadReportButton'
-import { NewTransactionButton } from '@/components/NewTransactionButton'
+
 import { getCurrentUser } from '@/lib/auth'
 
 export default async function DashboardPage({
@@ -90,7 +90,6 @@ export default async function DashboardPage({
                 </div>
                 <div className="flex flex-wrap gap-3">
                     <MonthSelector availableDates={availableMonths} />
-                    <NewTransactionButton />
                     <DownloadReportButton
                         ingresos={ingresos}
                         gastos={gastos}

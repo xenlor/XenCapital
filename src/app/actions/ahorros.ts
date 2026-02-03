@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUser } from '@/lib/auth'
+import { validateMonto, validateId, sanitizeDescription, checkRateLimit } from '@/lib/security'
 
 export async function getAhorros(month?: number, year?: number) {
     try {
@@ -33,19 +34,33 @@ export async function getAhorros(month?: number, year?: number) {
 export async function addAhorro(formData: FormData) {
     try {
         const user = await getCurrentUser()
-        const descripcion = formData.get('descripcion') as string
-        const monto = parseFloat(formData.get('monto') as string)
+
+        // Rate limiting
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
+        // Sanitizar descripción
+        const descripcionRaw = formData.get('descripcion') as string
+        const descripcion = sanitizeDescription(descripcionRaw)
+        if (!descripcion) {
+            return { success: false, error: 'La descripción es requerida' }
+        }
+
+        // Validar monto
+        const montoRaw = formData.get('monto') as string
+        const montoValidation = validateMonto(montoRaw)
+        if (!montoValidation.valid) {
+            return { success: false, error: montoValidation.error }
+        }
+
         const fechaStr = formData.get('fecha') as string
         const fecha = fechaStr ? new Date(fechaStr) : new Date()
-
-        if (!descripcion || isNaN(monto)) {
-            return { success: false, error: 'Descripción y monto son requeridos' }
-        }
 
         await prisma.ahorro.create({
             data: {
                 descripcion,
-                monto,
+                monto: montoValidation.value,
                 fecha,
                 userId: user.id,
             },
@@ -55,30 +70,38 @@ export async function addAhorro(formData: FormData) {
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error adding ahorro:', error)
         return { success: false, error: 'Error al añadir ahorro' }
     }
 }
 
 export async function deleteAhorro(id: number) {
+    const idValidation = validateId(id)
+    if (!idValidation.valid) {
+        return { success: false, error: idValidation.error }
+    }
+
     try {
         const user = await getCurrentUser()
+
+        if (!checkRateLimit(user.id)) {
+            return { success: false, error: 'Demasiadas solicitudes. Intenta más tarde.' }
+        }
+
         const result = await prisma.ahorro.deleteMany({
             where: {
-                id,
+                id: idValidation.value,
                 userId: user.id
             },
         })
 
         if (result.count === 0) {
-            return { success: false, error: 'Ahorro no encontrado o no tienes permisos' }
+            return { success: false, error: 'Registro no encontrado' }
         }
 
         revalidatePath('/ahorros')
         revalidatePath('/')
         return { success: true }
     } catch (error) {
-        console.error('Error deleting ahorro:', error)
         return { success: false, error: 'Error al eliminar ahorro' }
     }
 }
