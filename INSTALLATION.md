@@ -60,6 +60,7 @@ nano .env
 DATABASE_URL="postgresql://xen_user:tu_password_segura@localhost:5432/xencapital"
 AUTH_SECRET="escribe_aqui_algo_muy_largo_y_aleatorio"
 NEXTAUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"
 
 ```
 
